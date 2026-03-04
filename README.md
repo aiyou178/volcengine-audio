@@ -12,10 +12,12 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 ## Installation
 
+
 ### last document sync
 
-* 2026-03-01
+* 2026-03-04
 * if you find any document changes, please let me know or submit a PR
+* realtime API source: https://www.volcengine.com/docs/6561/1594356?lang=zh
 
 ### Install from PyPI
 
@@ -506,4 +508,4 @@ MIT
 ## References
 
 - [Volcengine Speech Services Documentation](https://www.volcengine.com/docs/6561/1324606)
-- [Volcengine Realtime Dialogue](https://www.volcengine.com/docs/6561/1594356)
+- [Volcengine Realtime Dialogue](https://www.volcengine.com/docs/6561/1594356?lang=zh)

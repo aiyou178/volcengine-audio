@@ -23,7 +23,7 @@ from .protocol import (
 class RealtimeDialogueConfig(BaseModel):
   """Configuration for realtime dialogue session
 
-  https://www.volcengine.com/docs/6561/1594356
+  https://www.volcengine.com/docs/6561/1594356?lang=zh
   """
 
   class DialogConfig(BaseModel):
@@ -47,6 +47,10 @@ class RealtimeDialogueConfig(BaseModel):
     dialog_id: str = Field(
       default='', description='Dialog ID for session continuity'
     )
+    character_manifest: str | None = Field(
+      default=None,
+      description='Role description for SC/SC2.0 models',
+    )
 
     class Location(BaseModel):
       longitude: float | None = Field(None, description='Longitude coordinate')
@@ -56,11 +60,24 @@ class RealtimeDialogueConfig(BaseModel):
       province: str | None = Field(None, description='Province name')
       district: str | None = Field(None, description='District name')
       town: str | None = Field(None, description='Town name')
-      country_code: str = Field(None, description='Country code')
+      country_code: str | None = Field(None, description='Country code')
       address: str | None = Field(None, description='Full address')
 
     location: Location | None = Field(
       None, description='User location info to improve web search accuracy'
+    )
+
+    class DialogContextItem(BaseModel):
+      role: Literal['user', 'assistant'] | str = Field(
+        ..., description='Role in dialog context'
+      )
+      text: str = Field(..., description='Message content')
+      timestamp: int | None = Field(
+        None, description='Unix timestamp in milliseconds'
+      )
+
+    dialog_context: list[DialogContextItem] | None = Field(
+      None, description='Initial dialogue context, should be complete QA pairs'
     )
 
     @model_validator(mode='after')
@@ -69,9 +86,27 @@ class RealtimeDialogueConfig(BaseModel):
         raise ValueError(
           'System role and speaking style combined length must not exceed 4000 characters'
         )
+      if self.dialog_context and len(self.dialog_context) % 2 != 0:
+        raise ValueError('dialog_context length must be an even number')
       return self
 
     class Extra(BaseModel):
+      class VolcWebsearchType(StrEnum):
+        web_summary = 'web_summary'
+        web = 'web'
+        web_agent = 'web_agent'
+
+      class InputMod(StrEnum):
+        audio = 'audio'
+        text = 'text'
+        audio_file = 'audio_file'
+
+      class Model(StrEnum):
+        model_o = 'O'
+        model_sc = 'SC'
+        model_o2_0 = '1.2.1.0'
+        model_sc2_0 = '2.2.0.0'
+
       strict_audit: bool = Field(
         default=True,
         description='Audit level: true=strict audit, false=normal audit',
@@ -82,19 +117,34 @@ class RealtimeDialogueConfig(BaseModel):
       enable_volc_websearch: bool = Field(
         default=False, description='Enable Volcengine web search'
       )
-      volc_websearch_type: Literal['web_summary', 'web_search'] = Field(
+      volc_websearch_type: VolcWebsearchType = Field(
         default='web_summary', description='Volcengine integrated search type'
       )
       volc_websearch_api_key: str | None = Field(
         None, description='Volcengine integrated search API Key'
       )
+      volc_websearch_bot_id: str | None = Field(
+        None,
+        description='Bot ID when using web_agent search source',
+      )
       volc_websearch_result_count: int | None = Field(
         None,
-        description='Volcengine integrated search result count, None defaults to 10',
-        le=50,
+        description='Volcengine integrated search result count, defaults to 10',
+        ge=1,
+        le=10,
       )
       volc_websearch_no_result_message: str | None = Field(
         None, description='Volcengine integrated search no result message'
+      )
+      input_mod: InputMod = Field(
+        default=InputMod.audio,
+        description='Input mode for non-microphone requests',
+      )
+      enable_music: bool = Field(
+        default=False, description='Enable singing capability'
+      )
+      model: Model = Field(
+        default=Model.model_o, description='Realtime dialogue model version'
       )
 
     extra: Extra = Field(default_factory=Extra)
@@ -121,18 +171,46 @@ class RealtimeDialogueConfig(BaseModel):
       zh_male_xiaotian_jupiter_bigtts = 'zh_male_xiaotian_jupiter_bigtts'
       """xiaotian voice: fresh and magnetic male voice"""
 
-    speaker: Speaker = Field(
+    speaker: Speaker | str = Field(
       default=Speaker.zh_female_vv_jupiter_bigtts, description='Speaker voice'
     )
 
     audio_config: AudioConfig = Field(default_factory=AudioConfig)
 
   class Asr(BaseModel):
+    class AudioInfo(BaseModel):
+      class Format(StrEnum):
+        pcm = 'pcm'
+        speech_opus = 'speech_opus'
+
+      format: Format | None = Field(
+        None,
+        description='Client upstream audio format',
+      )
+      sample_rate: int = Field(
+        16000, description='Client upstream sample rate'
+      )
+      channel: int = Field(1, description='Client upstream channel count')
+
     class Extra(BaseModel):
       end_smooth_window_ms: int = Field(
-        1500, description='End smooth window in milliseconds', ge=500
+        1500,
+        description='End smooth window in milliseconds',
+        ge=500,
+        le=50000,
+      )
+      enable_custom_vad: bool = Field(
+        False,
+        description='Enable custom VAD-based turn-end control',
+      )
+      enable_asr_twopass: bool = Field(
+        False,
+        description='Enable two-pass ASR (streaming + non-streaming)',
       )
 
+    audio_info: AudioInfo | None = Field(
+      None, description='ASR audio information for upstream audio'
+    )
     extra: Extra = Field(default_factory=Extra)
 
   dialog: DialogConfig | None = Field(None, description='Dialog configuration')
@@ -162,106 +240,84 @@ class ChatTextQueryRequest(BaseModel):
   content: str = Field(..., description='Text query content')
 
 
+class ChatRAGTextRequest(BaseModel):
+  """Request model for ChatRAGText event."""
+
+  external_rag: str = Field(
+    ...,
+    description='External RAG content used for summarization and speech output',
+  )
+
+
+class ConversationCreateRequest(BaseModel):
+  """Request model for ConversationCreate event."""
+
+  class Item(BaseModel):
+    role: Literal['user', 'assistant'] | str = Field(
+      ..., description='Role of context item'
+    )
+    text: str = Field(..., description='Message content')
+    timestamp: int | None = Field(
+      None, description='Unix timestamp in milliseconds'
+    )
+
+  items: list[Item] = Field(..., min_length=1)
+
+
+class ConversationUpdateRequest(BaseModel):
+  """Request model for ConversationUpdate event."""
+
+  class Item(BaseModel):
+    item_id: str = Field(..., description='Context item identifier')
+    text: str = Field(..., description='Updated message content')
+
+  items: list[Item] = Field(..., min_length=1)
+
+
+class ConversationRetrieveRequest(BaseModel):
+  """Request model for ConversationRetrieve event."""
+
+  class Item(BaseModel):
+    item_id: str = Field(..., description='Context item identifier')
+
+  items: list[Item] | None = Field(
+    None,
+    description='Optional item ids. If omitted, returns latest context window',
+  )
+
+
+class ConversationDeleteRequest(BaseModel):
+  """Request model for ConversationDelete event."""
+
+  class Item(BaseModel):
+    item_id: str = Field(..., description='Context item identifier')
+
+  items: list[Item] = Field(..., min_length=1)
+
+
 class ASRInfoResponse(BaseModel):
   """Response model for ASRInfo event - first word detection"""
 
-  asr_task_id: str = Field(
-    ..., description='ASR task ID for tracking and management'
-  )
   question_id: str = Field(
-    ..., description='Question ID associated with the ASR task'
+    ..., description='Question ID associated with current round'
   )
-  round_id: int = Field(..., description='Round ID for the ASR session')
+  asr_task_id: str | None = Field(
+    None, description='ASR task ID for compatibility with older payloads'
+  )
+  round_id: int | None = Field(
+    None, description='Round ID for compatibility with older payloads'
+  )
 
 
 class ASRResponseModel(BaseModel):
-  """Response model for ASRResponse event"""
-
-  class Extra(BaseModel):
-    """Extra information for ASR response"""
-
-    endpoint: bool = Field(
-      False, description='Indicates if the ASR has reached an endpoint'
-    )
-    interrupt_score: float = Field(
-      ..., description='Score indicating interruption likelihood'
-    )
-    is_pvad: bool = Field(
-      ..., description='Indicates if the response is from a PVAD model'
-    )
-    model_version: str = Field(..., description='Version of the ASR model used')
-    origin_text: str = Field(..., description='Original text recognized by ASR')
-
-    class ReqPayload(BaseModel):
-      """Request payload parameters for ASR"""
-
-      end_smooth_silence_proportion: float = Field(
-        ..., description='Proportion of silence at the end of the audio'
-      )
-      eos_silence_timeout: int = Field(
-        ..., description='End of speech silence timeout in milliseconds'
-      )
-
-    req_payload: ReqPayload = Field(
-      ..., description='Request payload parameters for ASR'
-    )
-
-    class SoftFinishParalinguistic(BaseModel):
-      """Soft finish paralinguistic information"""
-
-      asr_text: str = Field(
-        ..., description='ASR text recognized at soft finish'
-      )
-      para_resp: dict = Field(
-        ..., description='Paralinguistic response information'
-      )
-      para_text: str = Field(
-        ..., description='Paralinguistic text at soft finish'
-      )
-
-    soft_finish_paralinguistic: SoftFinishParalinguistic | None = Field(
-      None, description='Soft finish paralinguistic information'
-    )
-    source: str = Field(..., description='Source of the ASR response')
-    vad_backtrack_silence_time_ms: float = Field(
-      0.0, description='VAD backtrack silence time in milliseconds'
-    )
+  """Response model for ASRResponse event."""
 
   class Result(BaseModel):
-    class ResultAlternative(BaseModel):
-      """Alternative results for ASR response"""
-
-      end_time: float = Field(..., description='End time of the alternative')
-      oi_decoding_info: dict = Field(
-        default_factory=dict,
-        description='OI decoding information for the alternative',
-      )
-      semantic_related_to_prev: bool | None = Field(
-        None,
-        description='Indicates if the alternative is semantically related to previous',
-      )
-      start_time: float = Field(
-        ..., description='Start time of the alternative'
-      )
-      text: str = Field(..., description='Text recognized in the alternative')
-
-    alternatives: list[ResultAlternative] = Field(
-      ..., description='List of alternative results for ASR'
-    )
-    end_time: float = Field(..., description='End time of the result')
-    index: int = Field(..., description='Index of the result in the list')
+    text: str = Field(..., description='ASR recognized text')
     is_interim: bool = Field(
-      ..., description='Indicates if the result is interim'
+      ..., description='Whether this result is interim'
     )
-    is_vad_timeout: bool = Field(
-      ..., description='Indicates if the result is due to VAD timeout'
-    )
-    start_time: float = Field(..., description='Start time of the result')
-    text: str = Field(..., description='Text recognized in the result')
 
-  extra: Extra = Field(
-    ..., description='Extra information for the ASR response'
-  )
   results: list[Result] = Field(
     ..., description='List of recognized results from ASR'
   )
@@ -270,20 +326,20 @@ class ASRResponseModel(BaseModel):
 class ASREndedResponse(BaseModel):
   """Response model for ASREnded event"""
 
-  comfort_wait_time: int = Field(
-    ..., description='Comfortable wait time in milliseconds'
+  comfort_wait_time: int | None = Field(
+    None, description='Comfortable wait time in milliseconds'
   )
   last_resp_cost_time: int | None = Field(
     None, description='Time taken for the last response in milliseconds'
   )
-  no_content: bool = Field(
-    ..., description='Indicates if there was no content in the response'
+  no_content: bool | None = Field(
+    None, description='Indicates if there was no content in the response'
   )
-  task_request_seq_id: int = Field(
-    ..., description='Sequence ID of the task request'
+  task_request_seq_id: int | None = Field(
+    None, description='Sequence ID of the task request'
   )
-  task_request_timestamp: int = Field(
-    ..., description='Timestamp of the task request'
+  task_request_timestamp: int | None = Field(
+    None, description='Timestamp of the task request'
   )
   user_duration: int = Field(
     0, description='Duration of user interaction in milliseconds'
@@ -308,6 +364,59 @@ class ChatResponseModel(BaseModel):
   """Response model for ChatResponse event"""
 
   content: str = Field(..., description='Chat response content')
+  question_id: str | None = Field(
+    None, description='Question context item id'
+  )
+  reply_id: str | None = Field(None, description='Reply context item id')
+
+
+class ChatTextQueryConfirmedResponse(BaseModel):
+  """Response model for ChatTextQueryConfirmed event."""
+
+  question_id: str = Field(..., description='Question context item id')
+
+
+class ConversationItemResponse(BaseModel):
+  """Context item returned by conversation events."""
+
+  item_id: str = Field(..., description='Context item identifier')
+  role: str = Field(..., description='Role of context item')
+  text: str = Field(..., description='Message content')
+  timestamp: int | None = Field(
+    None, description='Unix timestamp in milliseconds'
+  )
+
+
+class ConversationCreatedResponse(BaseModel):
+  """Response model for ConversationCreated event."""
+
+  items: list[ConversationItemResponse] = Field(default_factory=list)
+
+
+class ConversationUpdatedResponse(BaseModel):
+  """Response model for ConversationUpdated event."""
+
+  message: str | None = Field(None, description='Optional update result info')
+
+
+class ConversationRetrievedResponse(BaseModel):
+  """Response model for ConversationRetrieved event."""
+
+  items: list[ConversationItemResponse] = Field(default_factory=list)
+
+
+class ConversationDeletedResponse(BaseModel):
+  """Response model for ConversationDeleted event."""
+
+  items: list[ConversationItemResponse] | None = Field(
+    None, description='Deleted context items'
+  )
+  status_code: int | None = Field(
+    None, description='Status code when nothing was deleted'
+  )
+  message: str | None = Field(
+    None, description='Detailed delete result message'
+  )
 
 
 class ConnectionFailedResponse(BaseModel):
@@ -331,7 +440,9 @@ class SessionFailedResponse(BaseModel):
 class RealtimeDialogueErrorResponse(BaseModel):
   """Error response model for realtime dialogue"""
 
-  error: str = Field(..., description='Error description')
+  error: str | None = Field(None, description='Error description')
+  status_code: int | str | None = Field(None, description='Error status code')
+  message: str | None = Field(None, description='Detailed error message')
 
 
 class RealtimeDialogueFunctions:
@@ -438,6 +549,68 @@ class RealtimeDialogueFunctions:
       EventSend.ChatTextQuery,
       session_id=session_id,
       request_meta=text_query_request.model_dump(),
+    )
+
+  @staticmethod
+  def chat_rag_text_payload(
+    session_id: str, rag_request: ChatRAGTextRequest
+  ) -> bytes:
+    """Create ChatRAGText event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.ChatRAGText,
+      session_id=session_id,
+      request_meta=rag_request.model_dump(),
+    )
+
+  @staticmethod
+  def conversation_create_payload(
+    session_id: str, request: ConversationCreateRequest
+  ) -> bytes:
+    """Create ConversationCreate event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.ConversationCreate,
+      session_id=session_id,
+      request_meta=request.model_dump(exclude_none=True),
+    )
+
+  @staticmethod
+  def conversation_update_payload(
+    session_id: str, request: ConversationUpdateRequest
+  ) -> bytes:
+    """Create ConversationUpdate event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.ConversationUpdate,
+      session_id=session_id,
+      request_meta=request.model_dump(exclude_none=True),
+    )
+
+  @staticmethod
+  def conversation_retrieve_payload(
+    session_id: str,
+    request: ConversationRetrieveRequest | None = None,
+  ) -> bytes:
+    """Create ConversationRetrieve event payload."""
+    request_meta = request.model_dump(exclude_none=True) if request else {}
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.ConversationRetrieve,
+      session_id=session_id,
+      request_meta=request_meta,
+    )
+
+  @staticmethod
+  def conversation_delete_payload(
+    session_id: str, request: ConversationDeleteRequest
+  ) -> bytes:
+    """Create ConversationDelete event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.ConversationDelete,
+      session_id=session_id,
+      request_meta=request.model_dump(exclude_none=True),
     )
 
   @staticmethod

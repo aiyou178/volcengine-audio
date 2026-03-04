@@ -104,6 +104,11 @@ class EventSend(IntEnum):
   SayHello = 300
   ChatTTSText = 500
   ChatTextQuery = 501
+  ChatRAGText = 502
+  ConversationCreate = 510
+  ConversationUpdate = 511
+  ConversationRetrieve = 512
+  ConversationDelete = 514
 
 
 class EventReceive(IntEnum):
@@ -125,7 +130,13 @@ class EventReceive(IntEnum):
   ASRResponse = 451
   ASREnded = 459
   ChatResponse = 550
+  ChatTextQueryConfirmed = 553
   ChatEnded = 559
+  ConversationCreated = 567
+  ConversationUpdated = 568
+  ConversationRetrieved = 569
+  ConversationDeleted = 571
+  DialogCommonError = 599
   # TODO(Deo): need to check what this code is, in tts
   UNKNOWN = 50000000
   # TODO(Deo): need to check what this code is, in dialogue
