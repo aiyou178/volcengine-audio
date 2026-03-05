@@ -118,7 +118,8 @@ class RealtimeDialogueConfig(BaseModel):
         default=False, description='Enable Volcengine web search'
       )
       volc_websearch_type: VolcWebsearchType = Field(
-        default='web_summary', description='Volcengine integrated search type'
+        default=VolcWebsearchType.web_summary,
+        description='Volcengine integrated search type',
       )
       volc_websearch_api_key: str | None = Field(
         None, description='Volcengine integrated search API Key'
@@ -187,9 +188,7 @@ class RealtimeDialogueConfig(BaseModel):
         None,
         description='Client upstream audio format',
       )
-      sample_rate: int = Field(
-        16000, description='Client upstream sample rate'
-      )
+      sample_rate: int = Field(16000, description='Client upstream sample rate')
       channel: int = Field(1, description='Client upstream channel count')
 
     class Extra(BaseModel):
@@ -314,9 +313,7 @@ class ASRResponseModel(BaseModel):
 
   class Result(BaseModel):
     text: str = Field(..., description='ASR recognized text')
-    is_interim: bool = Field(
-      ..., description='Whether this result is interim'
-    )
+    is_interim: bool = Field(..., description='Whether this result is interim')
 
   results: list[Result] = Field(
     ..., description='List of recognized results from ASR'
@@ -364,9 +361,7 @@ class ChatResponseModel(BaseModel):
   """Response model for ChatResponse event"""
 
   content: str = Field(..., description='Chat response content')
-  question_id: str | None = Field(
-    None, description='Question context item id'
-  )
+  question_id: str | None = Field(None, description='Question context item id')
   reply_id: str | None = Field(None, description='Reply context item id')
 
 
