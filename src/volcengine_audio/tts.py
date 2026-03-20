@@ -8,7 +8,7 @@ import gzip
 import logging
 import struct
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, TypedDict
 
 import orjson
 from pydantic import (
@@ -353,6 +353,23 @@ class TTSSentenceEndResponse(BaseModel):
   silence_context: str = Field(...)
   speech_alignment_result: str = Field(...)
   text: str = Field(..., description='Text being synthesized')
+
+
+class TTSSentenceEndWord(TypedDict):
+  """Single aligned word entry emitted in sentence-end metadata."""
+
+  confidence: float
+  endTime: float
+  startTime: float
+  word: str
+
+
+class TTSSentenceEndPayload(TypedDict):
+  """Payload emitted in sentence-end subtitle metadata."""
+
+  phonemes: list[str]
+  text: str
+  words: list[TTSSentenceEndWord]
 
 
 class TTSEndResponse(BaseModel):
