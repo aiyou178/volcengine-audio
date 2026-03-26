@@ -3,7 +3,7 @@
 import orjson
 import pytest
 
-from volcengine_audio import TTSReqParams
+from volcengine_audio import TTSBigmodelResourceType, TTSReqParams
 
 
 class TestTTSReqParamsSchema:
@@ -54,3 +54,12 @@ class TestTTSReqParamsSchema:
     """latex_parser=v2 should require disable_markdown_filter=true."""
     with pytest.raises(ValueError, match='latex_parser=v2'):
       TTSReqParams.Additions(latex_parser='v2')
+
+  def test_concurrent_resource_ids_match_latest_docs(self):
+    """Concurrent resource ids should use the latest concurr suffix."""
+    assert TTSBigmodelResourceType.seed_tts_1_0_concurr.value == (
+      'seed-tts-1.0-concurr'
+    )
+    assert TTSBigmodelResourceType.voice_clone_1_0_concurr.value == (
+      'seed-icl-1.0-concurr'
+    )

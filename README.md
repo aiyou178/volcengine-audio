@@ -2,6 +2,8 @@
 
 Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive support for Text-to-Speech (TTS), Speech-to-Text (STT), and Realtime Dialogue capabilities.
 
+[中文 README](README.zh-CN.md) | [Package Maintenance Guide](AGENTS.md)
+
 ## Features
 
 - **Speech-to-Text (STT)**: Convert audio to text using Volcengine's ASR services (V2 and V3 APIs)
@@ -10,14 +12,35 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 - **Protocol Support**: Low-level protocol utilities for custom implementations
 - **Type Safety**: Full Pydantic model validation for all requests and responses
 
+## Documentation Sync
+
+### Last SDK/doc sync
+
+* Local sync date: `2026-03-26`
+* Package maintenance guide: [`AGENTS.md`](AGENTS.md)
+* Snapshot manifest: [`doc_sync/volcengine/manifest.json`](doc_sync/volcengine/manifest.json)
+* Refresh command: `uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`
+* These Volcengine docs are JS-rendered. The sync script opens the public docs pages with Playwright, captures the backing `api/doc/getDocDetail` JSON response, and writes cleaned `Result.Content` markdown snapshots to `doc_sync/volcengine/`.
+* The tracked snapshot files store only doc content text with span tags removed, while source metadata stays in `manifest.json`.
+* The snapshot files are tracked in git for future diffs, but they are not packed into wheels because this package only ships `src/volcengine_audio`.
+
+### Tracked upstream sources
+
+* Realtime dialogue: `2026-03-13T08:41:28Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+* TTS WebSocket bidirectional V3: `2026-03-16T10:24:14Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
+* TTS WebSocket unidirectional V3: `2026-03-16T10:21:49Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
+* TTS HTTP Chunked/SSE V3: `2026-03-17T09:29:21Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
+* STT streaming bigmodel: `2026-03-24T13:15:18Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+
+### Sync checklist
+
+1. Refresh the tracked content snapshots with `uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`.
+2. Diff `doc_sync/volcengine/*.md` to see which request fields, enums, events, or examples changed upstream.
+3. Update `src/volcengine_audio/` schemas and helper functions as needed.
+4. Update or add tests under `tests/`.
+5. Update the local sync date in this README and in [`README.zh-CN.md`](README.zh-CN.md).
+
 ## Installation
-
-
-### last document sync
-
-* 2026-03-04
-* if you find any document changes, please let me know or submit a PR
-* realtime API source: https://www.volcengine.com/docs/6561/1594356?lang=zh
 
 ### Install from PyPI
 
@@ -504,8 +527,3 @@ ruff format src/ tests/
 ## License
 
 MIT
-
-## References
-
-- [Volcengine Speech Services Documentation](https://www.volcengine.com/docs/6561/1324606)
-- [Volcengine Realtime Dialogue](https://www.volcengine.com/docs/6561/1594356?lang=zh)

@@ -35,13 +35,13 @@ class TTSBigmodelResourceType(StrEnum):
 
   seed_tts_1_0 = 'seed-tts-1.0'
   """Bigmodel TTS 1.0 character-based"""
-  seed_tts_1_0_concur = 'seed-tts-1.0-concur'
+  seed_tts_1_0_concurr = 'seed-tts-1.0-concurr'
   """Bigmodel TTS 1.0 concurrent"""
   seed_tts_2_0 = 'seed-tts-2.0'
   """Bigmodel TTS 2.0 character-based"""
   voice_clone_1_0 = 'seed-icl-1.0'
   """Voice cloning 1.0, character-based"""
-  voice_clone_1_0_concur = 'seed-icl-1.0-concur'
+  voice_clone_1_0_concurr = 'seed-icl-1.0-concurr'
   """Voice cloning 1.0, concurrent"""
   voice_clone_2_0 = 'seed-icl-2.0'
   """Voice cloning 2.0, character-based"""

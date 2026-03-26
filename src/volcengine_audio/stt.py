@@ -85,6 +85,18 @@ class STTBigmodelNoStreamLanguage(StrEnum):
   ms_MY = 'ms-MY'  # Malay
   th_TH = 'th-TH'  # Thai
   ar_SA = 'ar-SA'  # Arabic
+  it_IT = 'it-IT'  # Italian
+  bn_BD = 'bn-BD'  # Bengali
+  el_GR = 'el-GR'  # Greek
+  nl_NL = 'nl-NL'  # Dutch
+  ru_RU = 'ru-RU'  # Russian
+  tr_TR = 'tr-TR'  # Turkish
+  vi_VN = 'vi-VN'  # Vietnamese
+  pl_PL = 'pl-PL'  # Polish
+  ro_RO = 'ro-RO'  # Romanian
+  ne_NP = 'ne-NP'  # Nepali
+  uk_UA = 'uk-UA'  # Ukrainian
+  yue_CN = 'yue-CN'  # Cantonese
 
 
 class VolcengineAsrRequestV3(BaseModel):

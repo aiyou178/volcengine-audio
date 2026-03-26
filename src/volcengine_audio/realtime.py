@@ -100,11 +100,14 @@ class RealtimeDialogueConfig(BaseModel):
         audio = 'audio'
         text = 'text'
         audio_file = 'audio_file'
+        keep_alive = 'keep_alive'
+        push_to_talk = 'push_to_talk'
 
       class Model(StrEnum):
         model_o = 'O'
         model_sc = 'SC'
-        model_o2_0 = '1.2.1.0'
+        model_o2_0 = '1.2.1.1'
+        model_o2_0_legacy = '1.2.1.0'
         model_sc2_0 = '2.2.0.0'
 
       strict_audit: bool = Field(
@@ -144,6 +147,18 @@ class RealtimeDialogueConfig(BaseModel):
       enable_music: bool = Field(
         default=False, description='Enable singing capability'
       )
+      enable_loudness_norm: bool = Field(
+        default=False,
+        description='Enable 2.0 output loudness normalization',
+      )
+      enable_conversation_truncate: bool = Field(
+        default=False,
+        description='Enable 2.0 context truncation',
+      )
+      enable_user_query_exit: bool = Field(
+        default=False,
+        description='Enable exit intent detection from user speech',
+      )
       model: Model = Field(
         default=Model.model_o, description='Realtime dialogue model version'
       )
@@ -161,6 +176,18 @@ class RealtimeDialogueConfig(BaseModel):
       channel: int = Field(default=1, description='Audio channels')
       format: Format = Field(default=Format.pcm, description='Audio format')
       sample_rate: int = Field(default=24000, description='Sample rate')
+      speech_rate: int = Field(
+        default=0,
+        ge=-50,
+        le=100,
+        description='Speech rate for 2.0 models',
+      )
+      loudness_rate: int = Field(
+        default=0,
+        ge=-50,
+        le=100,
+        description='Output loudness for 2.0 models',
+      )
 
     class Speaker(StrEnum):
       zh_female_vv_jupiter_bigtts = 'zh_female_vv_jupiter_bigtts'
@@ -192,6 +219,19 @@ class RealtimeDialogueConfig(BaseModel):
       channel: int = Field(1, description='Client upstream channel count')
 
     class Extra(BaseModel):
+      class Context(BaseModel):
+        class Hotword(BaseModel):
+          word: str = Field(..., description='Hotword entry')
+
+        hotwords: list[Hotword] = Field(
+          default_factory=list,
+          description='Custom hotwords merged with table-based entries',
+        )
+        correct_words: dict[str, str] = Field(
+          default_factory=dict,
+          description='Regex replacement rules',
+        )
+
       end_smooth_window_ms: int = Field(
         1500,
         description='End smooth window in milliseconds',
@@ -205,6 +245,26 @@ class RealtimeDialogueConfig(BaseModel):
       enable_asr_twopass: bool = Field(
         False,
         description='Enable two-pass ASR (streaming + non-streaming)',
+      )
+      boosting_table_id: str | None = Field(
+        None,
+        description='Hotword table ID for two-pass ASR',
+      )
+      boosting_table_name: str | None = Field(
+        None,
+        description='Hotword table name for two-pass ASR',
+      )
+      regex_correct_table_id: str | None = Field(
+        None,
+        description='Regex correction table ID',
+      )
+      regex_correct_table_name: str | None = Field(
+        None,
+        description='Regex correction table name',
+      )
+      context: Context | None = Field(
+        None,
+        description='Inline hotword and replacement configuration',
       )
 
     audio_info: AudioInfo | None = Field(

@@ -3,6 +3,7 @@
 from volcengine_audio import (
   AudioCodec,
   STTAudioFormatV3,
+  STTBigmodelNoStreamLanguage,
   STTResultType,
   VolcengineAsrRequestV3,
 )
@@ -273,6 +274,12 @@ class TestVolcengineAsrRequestV3Serialization:
         },
       },
     }
+
+  def test_language_enum_includes_new_doc_locales(self):
+    """Latest non-streaming STT locales should be available."""
+    assert STTBigmodelNoStreamLanguage.it_IT.value == 'it-IT'
+    assert STTBigmodelNoStreamLanguage.ru_RU.value == 'ru-RU'
+    assert STTBigmodelNoStreamLanguage.yue_CN.value == 'yue-CN'
 
   def test_enable_nostream_input_alias_maps_to_enable_nonstream(self):
     """Legacy enable_nostream input should map to enable_nonstream output."""

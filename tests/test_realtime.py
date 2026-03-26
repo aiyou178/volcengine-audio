@@ -50,6 +50,16 @@ def test_start_session_supports_latest_doc_fields():
         end_smooth_window_ms=1200,
         enable_custom_vad=True,
         enable_asr_twopass=True,
+        boosting_table_id='boost-1',
+        boosting_table_name='boost-name',
+        regex_correct_table_id='regex-1',
+        regex_correct_table_name='regex-name',
+        context=RealtimeDialogueConfig.Asr.Extra.Context(
+          hotwords=[
+            RealtimeDialogueConfig.Asr.Extra.Context.Hotword(word='豆包')
+          ],
+          correct_words={'旧词': '新词'},
+        ),
       ),
     ),
     dialog=RealtimeDialogueConfig.DialogConfig(
@@ -70,9 +80,18 @@ def test_start_session_supports_latest_doc_fields():
       extra=RealtimeDialogueConfig.DialogConfig.Extra(
         volc_websearch_type=RealtimeDialogueConfig.DialogConfig.Extra.VolcWebsearchType.web_agent,
         volc_websearch_bot_id='bot-id',
-        input_mod=RealtimeDialogueConfig.DialogConfig.Extra.InputMod.audio_file,
+        input_mod=RealtimeDialogueConfig.DialogConfig.Extra.InputMod.keep_alive,
+        enable_loudness_norm=True,
+        enable_conversation_truncate=True,
+        enable_user_query_exit=True,
         model=RealtimeDialogueConfig.DialogConfig.Extra.Model.model_o2_0,
       ),
+    ),
+    tts=RealtimeDialogueConfig.TTSConfig(
+      audio_config=RealtimeDialogueConfig.TTSConfig.AudioConfig(
+        speech_rate=10,
+        loudness_rate=5,
+      )
     ),
   )
 
@@ -84,11 +103,19 @@ def test_start_session_supports_latest_doc_fields():
   assert meta['asr']['audio_info']['format'] == 'speech_opus'
   assert meta['asr']['extra']['enable_custom_vad'] is True
   assert meta['asr']['extra']['enable_asr_twopass'] is True
+  assert meta['asr']['extra']['boosting_table_id'] == 'boost-1'
+  assert meta['asr']['extra']['regex_correct_table_name'] == 'regex-name'
+  assert meta['asr']['extra']['context']['correct_words'] == {'旧词': '新词'}
   assert meta['dialog']['character_manifest'] == '角色设定'
-  assert meta['dialog']['extra']['model'] == '1.2.1.0'
-  assert meta['dialog']['extra']['input_mod'] == 'audio_file'
+  assert meta['dialog']['extra']['model'] == '1.2.1.1'
+  assert meta['dialog']['extra']['input_mod'] == 'keep_alive'
+  assert meta['dialog']['extra']['enable_loudness_norm'] is True
+  assert meta['dialog']['extra']['enable_conversation_truncate'] is True
+  assert meta['dialog']['extra']['enable_user_query_exit'] is True
   assert meta['dialog']['extra']['volc_websearch_type'] == 'web_agent'
   assert meta['dialog']['extra']['volc_websearch_bot_id'] == 'bot-id'
+  assert meta['tts']['audio_config']['speech_rate'] == 10
+  assert meta['tts']['audio_config']['loudness_rate'] == 5
 
 
 def test_dialog_context_requires_even_length():

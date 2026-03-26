@@ -1,0 +1,56 @@
+{
+  "synced_at": "2026-03-26T03:02:12.153906+00:00",
+  "command": "uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py",
+  "docs": [
+    {
+      "name": "realtime_dialogue",
+      "document_id": "1594356",
+      "title": "端到端实时语音大模型API接入文档",
+      "updated_time": "2026-03-13T08:41:28Z",
+      "source_url": "https://www.volcengine.com/docs/6561/1594356?lang=zh",
+      "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1594356&AuditDocumentID=&type=online",
+      "file": "doc_sync/volcengine/1594356-realtime_dialogue.md",
+      "content_sha256": "7f2606e5e523728f650bfe727a3db8592a887cc43b794217c4ad8c1be188cc3f"
+    },
+    {
+      "name": "tts_websocket_bidirectional_v3",
+      "document_id": "1329505",
+      "title": "WebSocket 双向流式-V3",
+      "updated_time": "2026-03-16T10:24:14Z",
+      "source_url": "https://www.volcengine.com/docs/6561/1329505?lang=zh",
+      "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1329505&AuditDocumentID=&type=online",
+      "file": "doc_sync/volcengine/1329505-tts_websocket_bidirectional_v3.md",
+      "content_sha256": "2e5eac3527bb0e0e3c9cafc40cc55d9b637caa35ca1eabca3aa6e25ad65a92d5"
+    },
+    {
+      "name": "tts_websocket_unidirectional_v3",
+      "document_id": "1719100",
+      "title": "WebSocket 单向流式-V3",
+      "updated_time": "2026-03-16T10:21:49Z",
+      "source_url": "https://www.volcengine.com/docs/6561/1719100?lang=zh",
+      "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1719100&AuditDocumentID=&type=online",
+      "file": "doc_sync/volcengine/1719100-tts_websocket_unidirectional_v3.md",
+      "content_sha256": "0b7ad0b05ed523797925b3c15137c42b3017fe8992996ef4789f521b11ce2907"
+    },
+    {
+      "name": "tts_http_chunked_sse_v3",
+      "document_id": "1598757",
+      "title": "HTTP Chunked/SSE单向流式-V3",
+      "updated_time": "2026-03-17T09:29:21Z",
+      "source_url": "https://www.volcengine.com/docs/6561/1598757?lang=zh",
+      "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1598757&AuditDocumentID=&type=online",
+      "file": "doc_sync/volcengine/1598757-tts_http_chunked_sse_v3.md",
+      "content_sha256": "c5640d4d4928058172d28a6585000e41b3eacce3831d9ef5486b7b3f96edd852"
+    },
+    {
+      "name": "stt_streaming_bigmodel",
+      "document_id": "1354869",
+      "title": "大模型流式语音识别API",
+      "updated_time": "2026-03-24T13:15:18Z",
+      "source_url": "https://www.volcengine.com/docs/6561/1354869?lang=zh",
+      "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1354869&AuditDocumentID=&type=online",
+      "file": "doc_sync/volcengine/1354869-stt_streaming_bigmodel.md",
+      "content_sha256": "73678c3213031943258d0257cd8815798de15ca069ded784dca478a2b57bd3c0"
+    }
+  ]
+}
