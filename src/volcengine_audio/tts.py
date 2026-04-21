@@ -47,6 +47,57 @@ class TTSBigmodelResourceType(StrEnum):
   """Voice cloning 2.0, character-based"""
 
 
+class TTSBigmodelModelType(StrEnum):
+  """Volcengine TTS req_params.model values from the latest docs."""
+
+  seed_tts_1_1 = 'seed-tts-1.1'
+  """Improved 1.1 model with better quality and latency."""
+  seed_tts_2_0_expressive = 'seed-tts-2.0-expressive'
+  """2.0 expressive model with QA and COT support."""
+  seed_tts_2_0_standard = 'seed-tts-2.0-standard'
+  """2.0 standard model with more stable expression and no QA/COT."""
+
+
+TTS_RESOURCE_IDS_1_0 = frozenset(
+  {
+    TTSBigmodelResourceType.seed_tts_1_0,
+    TTSBigmodelResourceType.seed_tts_1_0_concurr,
+    TTSBigmodelResourceType.voice_clone_1_0,
+    TTSBigmodelResourceType.voice_clone_1_0_concurr,
+  }
+)
+TTS_RESOURCE_IDS_2_0 = frozenset(
+  {
+    TTSBigmodelResourceType.seed_tts_2_0,
+    TTSBigmodelResourceType.voice_clone_2_0,
+  }
+)
+TTS_MODELS_1_0 = frozenset({TTSBigmodelModelType.seed_tts_1_1})
+TTS_MODELS_2_0 = frozenset(
+  {
+    TTSBigmodelModelType.seed_tts_2_0_expressive,
+    TTSBigmodelModelType.seed_tts_2_0_standard,
+  }
+)
+
+
+def validate_tts_resource_model_mapping(
+  resource_id: TTSBigmodelResourceType,
+  model: TTSBigmodelModelType | None,
+) -> None:
+  """Validate the supported mapping between resource ids and TTS models."""
+  if model is None:
+    return
+  if resource_id in TTS_RESOURCE_IDS_1_0 and model in TTS_MODELS_1_0:
+    return
+  if resource_id in TTS_RESOURCE_IDS_2_0 and model in TTS_MODELS_2_0:
+    return
+  raise ValueError(
+    'Invalid TTS resource_id/model mapping: '
+    f'{resource_id} is not compatible with {model}'
+  )
+
+
 class OperationEnum(StrEnum):
   """TTS operation types"""
 
@@ -169,6 +220,14 @@ class TTSReqParams(BaseModel):
       False, description='Return sentence-level subtitle timestamps'
     )
 
+    @model_validator(mode='after')
+    def sync_timestamp_and_subtitle(self):
+      """Enable both timestamp and subtitle when either one is requested."""
+      if self.enable_timestamp or self.enable_subtitle:
+        self.enable_timestamp = True
+        self.enable_subtitle = True
+      return self
+
   class Additions(BaseModel):
     """Additional TTS parameters"""
 
@@ -285,8 +344,9 @@ class VolcengineTTSBidirectionRequest(BaseModel):
 
   class ReqParams(TTSReqParams):
     text: str = Field(..., description='Text to synthesize')
-    model: TTSBigmodelResourceType | None = Field(
-      None, description='Model name'
+    model: TTSBigmodelModelType | str | None = Field(
+      None,
+      description='Optional req_params.model value from the TTS docs',
     )
 
     class MixSpeaker(BaseModel):
@@ -355,8 +415,8 @@ class TTSSentenceEndResponse(BaseModel):
   text: str = Field(..., description='Text being synthesized')
 
 
-class TTSSentenceEndWord(TypedDict):
-  """Single aligned word entry emitted in sentence-end metadata."""
+class TTSTimedWord(TypedDict):
+  """Single aligned word entry emitted in TTS timing metadata."""
 
   confidence: float
   endTime: float
@@ -365,11 +425,19 @@ class TTSSentenceEndWord(TypedDict):
 
 
 class TTSSentenceEndPayload(TypedDict):
-  """Payload emitted in sentence-end subtitle metadata."""
+  """Payload emitted in sentence-end metadata."""
 
   phonemes: list[str]
   text: str
-  words: list[TTSSentenceEndWord]
+  words: list[TTSTimedWord]
+
+
+class TTSSubtitlePayload(TypedDict):
+  """Payload emitted in 2.0 async subtitle events."""
+
+  phonemes: list[str]
+  text: str
+  words: list[TTSTimedWord]
 
 
 class TTSEndResponse(BaseModel):

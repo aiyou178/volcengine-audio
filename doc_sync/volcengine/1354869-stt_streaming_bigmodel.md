@@ -25,9 +25,9 @@
 |Key |说明 |Value 示例 |
 |---|---|---|
 | | | | \
-| | | |
+|X-Api-App-Key |使用火山引擎控制台获取的APP ID，可参考 [控制台使用FAQ-Q1](/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F) |123456789 |
 | | | | \
-|X-Api-App-Key |使用火山引擎控制台获取的APP Key，可参考 [快速入门（新版控制台）](https://www.volcengine.com/docs/6561/2119699?lang=zh#ew1HctnP) |123456789 |
+|X-Api-Access-Key |使用火山引擎控制台获取的Access Token，可参考 [控制台使用FAQ-Q1](/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F) |your-access-key |
 | | | | \
 |X-Api-Resource-Id |表示调用服务的资源信息 ID |豆包流式语音识别模型1.0 |\
 | | | |\
@@ -60,6 +60,7 @@ websocket 握手成功后，会返回这些 Response header。强烈建议记录
 GET /api/v3/sauc/bigmodel
 Host: openspeech.bytedance.com
 X-Api-App-Key: 123456789
+X-Api-Access-Key: your-access-key
 X-Api-Resource-Id: volc.bigasr.sauc.duration
 X-Api-Connect-Id: 随机生成的UUID
 
@@ -75,8 +76,8 @@ X-Tt-Logid: 202407261553070FACFE6D19421815D605
 ![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/6d72ca511e454d418f01c735c233bd5d~tplv-goo7wpa0wc-image.image =757x)
 
 ## WebSocket 二进制协议
-WebSocket 使用二进制协议传输数据。在WebSocket frame payload，我们使用二进制协议传输数据，并且还有我们自己制定的格式包括 header、data size 和 data 三部分组成，其中 header 描述为消息类型、序列化方式以及压缩格式等信息，payload size 是 payload 的长度，payload 是具体负载内容，依据消息类型不同 payload 内容不同。
-需注意：协议中整数类型的字段都使用**大端**表示。
+在 WebSocket frame payload 中，我们使用二进制协议传输数据，且使用专属的制定格式，包括 header、data size 和 data 三部分。其中 header 描述消息类型、序列化方式以及压缩格式等信息，payload size 是 payload 的长度，payload 是具体负载内容，依据消息类型不同 payload 内容不同。
+需注意：协议中整数类型的字段都使用大端表示。
 
 ### header 数据格式
 
@@ -229,6 +230,7 @@ Payload： 包含音频的元数据以及 server 所需的相关参数，一般�
 | | | | | |例如，“一九七零年”->“1970年”和“一百二十三美元”->“$123”。 |
 | | | | | | | \
 |enable_speaker_info |启用说话人聚类分离 |2 |bool | |默认不开启，不指定*language*字段或者*language指定为"zh-CN"（此时采用默认的中英文模型）可采用该能力* |\
+| | | | | |如果使用双向流式优化接口，需要开启enable_nonstream为true |\
 | | | | | |需同时配置ssd_version = "200"使用（建议使用ASR2.0时开启，ASR1.0不推荐） |
 | | | | | | | \
 |ssd_version |ssd版本号 |2 |string | |ssd_version = "200"时为启动大模型SSD能力（建议使用ASR2.0时开启，ASR1.0不推荐） |
@@ -733,8 +735,8 @@ server 响应 "Full server response" - 最终回应及处理结果
 
 # Demo
 Python：
-<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/435a0aa6489544448588c91207a333ae~tplv-goo7wpa0wc-image.image" name="sauc_python.zip" ></Attachment>
+<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/9a5371db0dbb4fc389115e8808a5ac73~tplv-goo7wpa0wc-image.image" name="sauc_python.zip" ></Attachment>
 Go：
-<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/4219692970bb43c8aabd003dc08dfea0~tplv-goo7wpa0wc-image.image" name="sauc_go.zip" ></Attachment>
+<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/11e65137790c4ecb8651e01221adc8e9~tplv-goo7wpa0wc-image.image" name="sauc_go.zip" ></Attachment>
 Java：
-<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/6b884f64dfb64c43af4829720e5400ab~tplv-goo7wpa0wc-image.image" name="sauc.zip" ></Attachment>
+<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/9bf64204b30b4ba8be3099c5c5193bdc~tplv-goo7wpa0wc-image.image" name="sauc.zip" ></Attachment>

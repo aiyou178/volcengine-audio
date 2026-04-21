@@ -1,43 +1,129 @@
 # AGENTS.md
 
-## Scope
+Guidance for coding agents working in
+`/Users/liangdeo/pyproj/dispatcher/packages/volcengine-audio`.
 
-This package contains the standalone `volcengine-audio` SDK:
+## 1) What This Package Is
 
-* `src/volcengine_audio/stt.py`: STT schemas and helpers
-* `src/volcengine_audio/tts.py`: TTS schemas and helpers
-* `src/volcengine_audio/realtime.py`: realtime dialogue schemas and helpers
-* `src/volcengine_audio/protocol.py`: shared protocol enums and binary helpers
-* `tests/`: package-level regression coverage
+`volcengine-audio` is the standalone Python SDK for Volcengine audio
+services. It provides typed schemas and request/response helpers for:
 
-## Source of truth
+- Speech-to-Text (STT)
+- Text-to-Speech (TTS)
+- Realtime Dialogue
+- Shared websocket/binary protocol helpers
+
+Core maintenance entrypoints:
+
+- `src/volcengine_audio/stt.py`
+- `src/volcengine_audio/tts.py`
+- `src/volcengine_audio/realtime.py`
+- `src/volcengine_audio/protocol.py`
+- `src/volcengine_audio/__init__.py`
+- `scripts/sync_volcengine_docs.py`
+
+## 2) Environment and Dependencies
+
+- Workspace runtime: Python 3.13
+- Package metadata: `requires-python = ">=3.10"`
+- Package manager: `uv`
+- Build backend: `hatchling`
+- Runtime dependencies: `pydantic`, `orjson`
+
+Useful setup commands:
+
+```bash
+# from package root
+uv sync --frozen --group dev
+
+# from repo root
+uv run pytest packages/volcengine-audio/tests
+```
+
+## 3) Source of Truth
 
 Use the tracked Volcengine doc snapshots in `doc_sync/volcengine/` as the
 first stop during maintenance:
 
-* `doc_sync/volcengine/manifest.json`
-* `doc_sync/volcengine/1594356-realtime_dialogue.md`
-* `doc_sync/volcengine/1329505-tts_websocket_bidirectional_v3.md`
-* `doc_sync/volcengine/1719100-tts_websocket_unidirectional_v3.md`
-* `doc_sync/volcengine/1598757-tts_http_chunked_sse_v3.md`
-* `doc_sync/volcengine/1354869-stt_streaming_bigmodel.md`
+- `doc_sync/volcengine/manifest.json`
+- `doc_sync/volcengine/1594356-realtime_dialogue.md`
+- `doc_sync/volcengine/1329505-tts_websocket_bidirectional_v3.md`
+- `doc_sync/volcengine/1719100-tts_websocket_unidirectional_v3.md`
+- `doc_sync/volcengine/1598757-tts_http_chunked_sse_v3.md`
+- `doc_sync/volcengine/1354869-stt_streaming_bigmodel.md`
 
 These files are tracked in git so future syncs can diff upstream changes
-quickly. They are repo-only artifacts and are not packed into wheels because
-the wheel build only includes `src/volcengine_audio`.
+quickly. They are repo-only maintenance artifacts and are not packed into
+wheels because the wheel build only includes `src/volcengine_audio`.
 
 Snapshot format guidance:
 
-* Store only the cleaned `Result.Content` text from the upstream docs.
-* Do not store the full JSON response payload in tracked snapshot files.
-* Strip `<span ...>` and `</span>` tags before writing snapshots so future
+- Store only the cleaned `Result.Content` text from the upstream docs.
+- Do not store the full JSON response payload in tracked snapshot files.
+- Strip `<span ...>` and `</span>` tags before writing snapshots so future
   diffs stay readable.
-* Keep metadata such as `updated_time`, `source_url`, `api_url`, and the
+- Keep metadata such as `updated_time`, `source_url`, `api_url`, and the
   content hash in `manifest.json`.
 
-## How to refresh docs
+## 4) Quality and Static Checks
 
-Run:
+Run what is relevant for the change:
+
+```bash
+# from package root
+uv run ruff check src tests
+uv run ruff format src tests
+uv run pytest
+
+# from repo root
+uv run ruff check packages/volcengine-audio/src packages/volcengine-audio/tests
+uv run ruff format packages/volcengine-audio/src packages/volcengine-audio/tests
+uv run pytest packages/volcengine-audio/tests
+```
+
+## 5) Testing
+
+Tests live under `tests/` and should stay package-local.
+
+Useful commands:
+
+```bash
+# full package suite
+uv run pytest packages/volcengine-audio/tests
+
+# targeted file
+uv run pytest packages/volcengine-audio/tests/test_realtime.py
+
+# targeted test selection
+uv run pytest packages/volcengine-audio/tests -k tts
+```
+
+Testing expectations:
+
+- Add or update regression coverage for any schema, enum, protocol, or helper
+  change.
+- Prefer exact payload assertions over loose partial checks.
+- Cover both request generation and response parsing when protocol behavior
+  changes.
+- Do not use the dispatcher Docker test wrapper for this package unless the
+  change truly depends on repo-level integration.
+
+## 6) Repo Map
+
+- `src/volcengine_audio/protocol.py`: shared enums, headers, and binary helpers
+- `src/volcengine_audio/stt.py`: STT request/response models and helpers
+- `src/volcengine_audio/tts.py`: TTS request/response models and helpers
+- `src/volcengine_audio/realtime.py`: realtime dialogue models and helpers
+- `src/volcengine_audio/__init__.py`: public exports
+- `tests/`: package-level regression coverage
+- `doc_sync/volcengine/`: tracked upstream snapshots and manifest
+- `scripts/sync_volcengine_docs.py`: Playwright-based doc sync utility
+- `README.md`: English package guide and sync metadata
+- `README.zh-CN.md`: Chinese package guide and sync metadata
+
+## 7) Documentation Sync Rules
+
+Refresh docs with:
 
 ```bash
 uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py
@@ -51,29 +137,75 @@ What the script does:
    snapshot for each tracked doc.
 4. Writes `manifest.json` with source metadata and content hashes.
 
-Important note:
+Important notes:
 
-* The public docs pages are JS-rendered.
-* Direct CLI requests to the JSON endpoint may return unauthorized.
-* Prefer Playwright response interception over raw `curl` scraping.
+- The public docs pages are JS-rendered.
+- Direct CLI requests to the JSON endpoint may return unauthorized.
+- Prefer Playwright response interception over raw `curl` scraping.
 
-## SDK sync workflow
+## 8) Coding Standards (Package-Specific)
+
+- Keep the package standalone; do not import dispatcher app code into
+  `src/volcengine_audio`.
+- Use `orjson` for JSON operations in package code when serialization is
+  needed.
+- Prefer modern typing syntax such as `list[str]` and `str | None`.
+- Annotate function parameters and return types.
+- Always add docstrings for added functions and public APIs.
+- Keep imports at top unless lazy import is required.
+- Logging style should use interpolation, for example
+  `logger.info('message %s', value)`.
+- Do not abstract code into helpers unless it is genuinely reused or clearly
+  improves maintainability.
+- Protocol and event constants belong in `protocol.py`; do not duplicate them
+  across modules.
+- If a change affects the public SDK surface, update `__init__.py` in the same
+  change.
+- If docs or behavior changed materially, update `README.md` and
+  `README.zh-CN.md` in the same change.
+
+Formatting from repo config:
+
+- Ruff enforced
+- 2-space indentation
+- 80-char line length
+- single quotes
+
+## 9) Change Playbooks
+
+### A) Sync upstream docs and SDK behavior
 
 1. Refresh `doc_sync/volcengine/*.md` and `manifest.json`.
-2. Diff the changed content snapshots and identify schema/helper drift.
+2. Diff the changed snapshots and identify schema/helper drift.
 3. Update package code:
-   * `stt.py` for request fields, locales, and response payload changes.
-   * `tts.py` for resource IDs, additions, and response payload changes.
-   * `realtime.py` for session config, event payloads, and response models.
-   * `protocol.py` when message or event identifiers change.
-   * `__init__.py` if new public exports are added.
+   - `stt.py` for request fields, locales, and response payload changes
+   - `tts.py` for resource IDs, additions, and response payload changes
+   - `realtime.py` for session config, event payloads, and response models
+   - `protocol.py` when message or event identifiers change
+   - `__init__.py` if new public exports are added
 4. Update tests in `tests/` to cover the new upstream behavior.
 5. Update `README.md` and `README.zh-CN.md`:
-   * refresh the local sync date
-   * refresh upstream source update timestamps if they changed
-   * document any new sync-sensitive fields or resources
+   - refresh the local sync date
+   - refresh upstream source update timestamps if they changed
+   - document any new sync-sensitive fields or resources
 
-## Practical diff hints
+### B) Add or change an SDK model/helper
+
+1. Find the upstream doc snapshot that justifies the change.
+2. Update the relevant module under `src/volcengine_audio/`.
+3. Update `protocol.py` as well if the change touches shared enums or framing.
+4. Export the symbol from `__init__.py` if it is part of the public API.
+5. Add targeted regression tests in `tests/`.
+6. Update README examples if the user-facing usage changed.
+
+### C) Change protocol or event handling
+
+1. Update shared enums/helpers in `protocol.py`.
+2. Update dependent modules in `stt.py`, `tts.py`, or `realtime.py`.
+3. Add tests for payload generation and parsing.
+4. Verify existing event IDs and helper defaults still match upstream docs.
+
+## 10) Practical Diff Hints
 
 Useful commands:
 
@@ -85,12 +217,12 @@ rg -n "keep_alive|push_to_talk|concurr|UpdatedTime" packages/volcengine-audio
 
 High-signal fields to watch:
 
-* Realtime `dialog.extra`, `tts.audio_config`, `asr.extra`
-* TTS resource IDs and `req_params.additions`
-* STT language enums and optional request flags
-* Event IDs and response payload shapes
+- Realtime `dialog.extra`, `tts.audio_config`, `asr.extra`
+- TTS resource IDs and `req_params.additions`
+- STT language enums and optional request flags
+- Event IDs and response payload shapes
 
-## Validation
+## 11) Validation
 
 Run at least:
 
@@ -98,3 +230,22 @@ Run at least:
 uv run pytest packages/volcengine-audio/tests
 uv run ruff check packages/volcengine-audio/src packages/volcengine-audio/tests
 ```
+
+Also confirm:
+
+- The package still builds as a standalone SDK.
+- No temporary scraped artifacts or raw JSON payloads were added to git.
+- README sync metadata matches the refreshed snapshots when applicable.
+
+## 12) Practical Agent Checklist
+
+Before finishing code changes, run what is relevant:
+
+1. Refresh doc snapshots if the task is an upstream sync.
+2. Run targeted package tests via `uv run pytest ...`.
+3. Run `uv run ruff check ...`.
+4. Confirm no dispatcher-only dependency leaked into this standalone package.
+5. Confirm no secrets or temporary scrape artifacts were added to tracked files.
+6. Add docstrings and type annotations for new best-effort public code.
+7. Update nearby docs in the same change if behavior or maintenance workflow
+   changed materially.

@@ -39,50 +39,109 @@ response = session.post(url, headers=headers, json=payload, stream=True)
 * 服务对应的请求路径：`https://openspeech.bytedance.com/api/v3/tts/unidirectional`
 
 
-### Request Headers
+### 鉴权Request Headers
+使用[新版控制台](https://console.volcengine.com/speech/new)时，推荐采用以下更简化的鉴权方式。
+
+| | | | | | \
+|Key |说明 |参数类型 |是否必须 |Value示例 |
+|---|---|---|---|---|
+| | | | | | \
+|X-Api-Key |使用火山引擎控制台获取的API Key，可参考 [控制台API Key管理](https://www.volcengine.com/docs/6561/2119699?lang=zh#ew1HctnP) |string |必须 |"your-api-key" |
+| | | | | | \
+|X-Api-Resource-Id |\
+| |表示调用服务的资源信息 ID，可以用来选择不同的模型版本效果，也决定了计费方式。 |\
+| | |string |必须 |**豆包语音合成大模型** |\
+| | | | |语音合成接口通过 `X-Api-Resource-Id` 参数来选择不同的版本效果： |\
+| | | | | |\
+| | | | |* `seed-tts-2.0`仅支持调用["豆包语音合成模型2.0"的音色](https://www.volcengine.com/docs/6561/1257544?lang=zh#%E8%B1%86%E5%8C%85%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90%E6%A8%A1%E5%9E%8B2-0-%E9%9F%B3%E8%89%B2%E5%88%97%E8%A1%A8) |\
+| | | | |* `seed-tts-1.0` / `seed-tts-1.0-concurr`仅支持调用["豆包语音合成模型1.0"的音色](https://www.volcengine.com/docs/6561/1257544?lang=zh#%E8%B1%86%E5%8C%85%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90%E6%A8%A1%E5%9E%8B1-0-%E9%9F%B3%E8%89%B2%E5%88%97%E8%A1%A8) |\
+| | | | | |\
+| | | | |同时，`X-Api-Resource-Id` 也决定了计费方式： |\
+| | | | | |\
+| | | | |* `seed-tts-2.0`：对应计费商品为 “语音合成2.0字符版“ |\
+| | | | |* `seed-tts-1.0`：对应计费商品为“语音合成1.0字符版” |\
+| | | | |* `seed-tts-1.0-concurr`：对应计费商品为“声音复刻1.0并发版“ |\
+| | | | | |\
+| | | | |**豆包声音复刻大模型** |\
+| | | | |语音合成接口通过 `X-Api-Resource-Id` 参数来选择不同的版本效果： |\
+| | | | | |\
+| | | | |* `seed-icl-2.0`：对应声音复刻2.0 版本效果 |\
+| | | | |* `seed-icl-1.0` / `seed-icl-1.0-concurr`：对应声音复刻1.0 版本效果 |\
+| | | | | |\
+| | | | |同时，`X-Api-Resource-Id` 也决定了计费方式： |\
+| | | | | |\
+| | | | |* `seed-icl-2.0`：对应计费商品为“声音复刻2.0 字符版” |\
+| | | | |* `seed-icl-1.0`：对应计费商品为“声音复刻1.0 字符版” |\
+| | | | |* `seed-icl-1.0-concurr`：对应计费商品为“声音复刻1.0 并发版” |
+| | | | | | \
+|X-Api-Request-Id |标识客户端请求ID，uuid随机字符串 |string |可选 |“67ee89ba-7050-4c04-a3d7-ac61a63499b3” |
+
+```Python
+headers = {
+    "X-Api-Key": "your-api-key",
+    "X-Api-Resource-Id": "seed-tts-2.0"
+}
+```
+
+若使用[旧版控制台](https://console.volcengine.com/speech/app)，鉴权方式如下。建议尽快切换至新版，以体验更便捷的鉴权流程。
+
+| | | | | | \
+|Key |说明 |参数类型 |是否必须 |Value示例 |
+|---|---|---|---|---|
+| | | | | | \
+|X-Api-App-Id |\
+| |使用火山引擎控制台获取的APP ID，可参考 [控制台使用FAQ-Q1](https://www.volcengine.com/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F)（旧版控制台使用，新版控制台只需要X-Api-Key即可） |string |必须 |\
+| | | | |“123456789” |\
+| | | | | |
+| | | | | | \
+|X-Api-Access-Key |\
+| |使用火山引擎控制台获取的Access Token，可参考 [控制台使用FAQ-Q1](https://www.volcengine.com/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F)（旧版控制台使用，新版控制台只需要X-Api-Key即可） |string |必须 |\
+| | | | |“your-access-key” |\
+| | | | | |
+| | | | | | \
+|X-Api-Resource-Id |\
+| |表示调用服务的资源信息 ID，可以用来选择不同的模型版本效果，也决定了计费方式。 |\
+| | |string |必须 |\
+| | | | |**豆包语音合成大模型** |\
+| | | | |语音合成接口通过 `X-Api-Resource-Id` 参数来选择不同的版本效果： |\
+| | | | | |\
+| | | | |* `seed-tts-2.0`仅支持调用["豆包语音合成模型2.0"的音色](https://www.volcengine.com/docs/6561/1257544?lang=zh#%E8%B1%86%E5%8C%85%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90%E6%A8%A1%E5%9E%8B2-0-%E9%9F%B3%E8%89%B2%E5%88%97%E8%A1%A8) |\
+| | | | |* `seed-tts-1.0` / `seed-tts-1.0-concurr`仅支持调用["豆包语音合成模型1.0"的音色](https://www.volcengine.com/docs/6561/1257544?lang=zh#%E8%B1%86%E5%8C%85%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90%E6%A8%A1%E5%9E%8B1-0-%E9%9F%B3%E8%89%B2%E5%88%97%E8%A1%A8) |\
+| | | | | |\
+| | | | |同时，`X-Api-Resource-Id` 也决定了计费方式： |\
+| | | | | |\
+| | | | |* `seed-tts-2.0`：对应计费商品为 “语音合成2.0字符版“ |\
+| | | | |* `seed-tts-1.0`：对应计费商品为“语音合成1.0字符版” |\
+| | | | |* `seed-tts-1.0-concurr`：对应计费商品为“声音复刻1.0并发版“ |\
+| | | | | |\
+| | | | |**豆包声音复刻大模型** |\
+| | | | |语音合成接口通过 `X-Api-Resource-Id` 参数来选择不同的版本效果： |\
+| | | | | |\
+| | | | |* `seed-icl-2.0`：对应声音复刻2.0 版本效果 |\
+| | | | |* `seed-icl-1.0` / `seed-icl-1.0-concurr`：对应声音复刻1.0 版本效果 |\
+| | | | | |\
+| | | | |同时，`X-Api-Resource-Id` 也决定了计费方式： |\
+| | | | | |\
+| | | | |* `seed-icl-2.0`：对应计费商品为“声音复刻2.0 字符版” |\
+| | | | |* `seed-icl-1.0`：对应计费商品为“声音复刻1.0 字符版” |\
+| | | | |* `seed-icl-1.0-concurr`：对应计费商品为“声音复刻1.0 并发版” |
+| | | | | | \
+|X-Api-Request-Id |标识客户端请求ID，uuid随机字符串 |string |可选 |“67ee89ba-7050-4c04-a3d7-ac61a63499b3” |
+
+```Python
+headers = {
+    "X-Api-App-Id": "123456789",
+    "X-Api-Access-Key": "your-access-key",
+    "X-Api-Resource-Id": "seed-tts-2.0"
+}
+```
+
+
+### 额外Request Headers
 
 | | | | | \
 |Key |说明 |是否必须 |Value示例 |
 |---|---|---|---|
-| | | | | \
-|X-Api-App-Id |\
-| |使用火山引擎控制台获取的APP ID，可参考 [控制台使用FAQ-Q1](https://www.volcengine.com/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F) |是 |\
-| | | |123456789 |\
-| | | | |
-| | | | | \
-|X-Api-Access-Key |\
-| |使用火山引擎控制台获取的Access Token，可参考 [控制台使用FAQ-Q1](https://www.volcengine.com/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F) |是 |\
-| | | |your-access-key |\
-| | | | |
-| | | | | \
-|X-Api-Resource-Id |\
-| |表示调用服务的资源信息 ID |\
-| | |\
-| |* 豆包语音合成模型1.0： |\
-| |   * seed-tts-1.0 或者 volc.service_type.10029（字符版） |\
-| |   * seed-tts-1.0-concurr 或者 volc.service_type.10048（并发版） |\
-| |* 豆包语音合成模型2.0:   |\
-| |   * seed-tts-2.0 (字符版) |\
-| |* 声音复刻： |\
-| |   * seed-icl-1.0（声音复刻1.0字符版） |\
-| |   * seed-icl-1.0-concurr（声音复刻1.0并发版） |\
-| |   * seed-icl-2.0 (声音复刻2.0字符版) |\
-| | |\
-| |**注意：** |\
-| | |\
-| |* "豆包语音合成模型1.0"的资源信息ID仅适用于["豆包语音合成模型1.0"的音色](https://www.volcengine.com/docs/6561/1257544) |\
-| |* "豆包语音合成模型2.0"的资源信息ID仅适用于["豆包语音合成模型2.0"的音色](https://www.volcengine.com/docs/6561/1257544) |是 |\
-| | | |* 豆包语音合成模型1.0： |\
-| | | |   * seed-tts-1.0  |\
-| | | |   * seed-tts-1.0-concurr |\
-| | | |* 豆包语音合成模型2.0:   |\
-| | | |   * seed-tts-2.0  |\
-| | | |* 声音复刻： |\
-| | | |   * seed-icl-1.0（声音复刻1.0字符版） |\
-| | | |   * seed-icl-1.0-concurr（声音复刻1.0并发版） |\
-| | | |   * seed-icl-2.0 (声音复刻2.0字符版) |
-| | | | | \
-|X-Api-Request-Id |标识客户端请求ID，uuid随机字符串 |否 |67ee89ba-7050-4c04-a3d7-ac61a63499b3 |
 | | | | | \
 |X-Control-Require-Usage-Tokens-Return |请求消耗的用量返回控制标记。当携带此字段，在合成音频结束时的返回数据中会多一个usage的JSON Object字段，其中包含了所需的用量数据。 |否 |* 设置为*，表示返回已支持的用量数据。 |\
 | | | |* 也设置为具体的用量数据标记，如text_words；多个用逗号分隔 |\
@@ -213,10 +272,15 @@ response = session.post(url, headers=headers, json=payload, stream=True)
 |req_params.additions.max_length_to_filter_parenthesis |是否过滤括号内的部分，0为不过滤，100为过滤 | |int |100 |
 | | | | | | \
 |req_params.additions.explicit_language（明确语种） |仅读指定语种的文本 |\
-| |**精品音色和 声音复刻ICL1.0场景：** |\
+| |**语音合成 1.0 音色** |\
+| | |\
+| |* 根据音色列表中音色的支持范围指定对应语种 |\
+| |* 不给定参数，正常中英混 |\
+| | |\
+| |**声音复刻ICL1.0场景：** |\
 | | |\
 | |* 不给定参数，正常中英混 |\
-| |* `crosslingual` 启用多语种前端（包含`zh/en/ja/es-ms/id/pt-br`） |\
+| |* `crosslingual` 启用多语种前端（包含`zh/en/ja/es-mx/id/pt-br`） |\
 | |* `zh-cn` 中文为主，支持中英混  |\
 | |* `en` 仅英文 |\
 | |* `ja` 仅日文 |\
@@ -243,6 +307,11 @@ response = session.post(url, headers=headers, json=payload, stream=True)
 | |* 不给定参数，正常中英混 |\
 | |* `zh-cn` 中文为主，支持中英混  |\
 | |* `en` 仅英文 |\
+| | |\
+| |**语音合成 2.0 音色** |\
+| | |\
+| |* 根据音色列表中音色的支持范围指定对应语种 |\
+| |* 不给定参数，正常中英混 |\
 | | |\
 | |**声音复刻 ICL2.0场景：** |\
 | |当音色是使用model_type=4训练的 |\

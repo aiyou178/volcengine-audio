@@ -16,21 +16,22 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 ### Last SDK/doc sync
 
-* Local sync date: `2026-03-26`
+* Local sync date: `2026-04-21`
 * Package maintenance guide: [`AGENTS.md`](AGENTS.md)
 * Snapshot manifest: [`doc_sync/volcengine/manifest.json`](doc_sync/volcengine/manifest.json)
 * Refresh command: `uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`
 * These Volcengine docs are JS-rendered. The sync script opens the public docs pages with Playwright, captures the backing `api/doc/getDocDetail` JSON response, and writes cleaned `Result.Content` markdown snapshots to `doc_sync/volcengine/`.
 * The tracked snapshot files store only doc content text with span tags removed, while source metadata stays in `manifest.json`.
 * The snapshot files are tracked in git for future diffs, but they are not packed into wheels because this package only ships `src/volcengine_audio`.
+* Latest upstream review: April 2026 doc updates were primarily documentation changes, including newer TTS `X-Api-Key` auth guidance for the new console; the current SDK models did not require code changes in this sync.
 
 ### Tracked upstream sources
 
 * Realtime dialogue: `2026-03-13T08:41:28Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
-* TTS WebSocket bidirectional V3: `2026-03-16T10:24:14Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
-* TTS WebSocket unidirectional V3: `2026-03-16T10:21:49Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
-* TTS HTTP Chunked/SSE V3: `2026-03-17T09:29:21Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
-* STT streaming bigmodel: `2026-03-24T13:15:18Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+* TTS WebSocket bidirectional V3: `2026-04-15T11:39:37Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
+* TTS WebSocket unidirectional V3: `2026-04-15T11:39:51Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
+* TTS HTTP Chunked/SSE V3: `2026-04-15T11:40:01Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
+* STT streaming bigmodel: `2026-04-01T03:33:04Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
 
 ### Sync checklist
 
@@ -107,7 +108,7 @@ print(response_data['message'])
 from volcengine_audio import (
     VolcengineTTSBidirectionRequest,
     VolcengineTTSFunctions,
-    TTSBigmodelResourceType,
+    TTSBigmodelModelType,
     TTSAudioFormat,
     EventSend,
 )
@@ -118,7 +119,7 @@ tts_request = VolcengineTTSBidirectionRequest(
     req_params=VolcengineTTSBidirectionRequest.ReqParams(
         text="Hello, this is a test.",
         speaker="zh_female_vv_jupiter_bigtts",
-        model=TTSBigmodelResourceType.seed_tts_2_0,
+        model=TTSBigmodelModelType.seed_tts_1_1,
         audio_params=VolcengineTTSBidirectionRequest.ReqParams.AudioParams(
             format=TTSAudioFormat.mp3,
             sample_rate=24000,
@@ -254,7 +255,8 @@ Text-to-Speech models and utilities.
 - `TTSEndResponse`: TTS ended notification
 
 **Enums:**
-- `TTSBigmodelResourceType`: TTS model types (seed-tts-1.0, seed-tts-2.0, etc.)
+- `TTSBigmodelResourceType`: TTS resource IDs (`seed-tts-1.0`, `seed-tts-2.0`, etc.)
+- `TTSBigmodelModelType`: Optional `req_params.model` values (`seed-tts-1.1`, `seed-tts-2.0-standard`, etc.)
 - `TTSAudioFormat`: Audio formats (wav, pcm, mp3, ogg_opus)
 
 **Helper Classes:**

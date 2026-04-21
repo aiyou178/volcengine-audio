@@ -125,6 +125,7 @@ class EventReceive(IntEnum):
   TTSSentenceStart = 350
   TTSSentenceEnd = 351
   TTSResponse = 352
+  TTSSubtitle = 364
   TTSEnded = 359
   ASRInfo = 450
   ASRResponse = 451
@@ -137,6 +138,7 @@ class EventReceive(IntEnum):
   ConversationRetrieved = 569
   ConversationDeleted = 571
   DialogCommonError = 599
+  INVALID_MODEL = 45000001
   # TODO(Deo): need to check what this code is, in tts
   UNKNOWN = 50000000
   # TODO(Deo): need to check what this code is, in dialogue
