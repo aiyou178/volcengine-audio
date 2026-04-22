@@ -138,6 +138,7 @@ class EventReceive(IntEnum):
   ConversationRetrieved = 569
   ConversationDeleted = 571
   DialogCommonError = 599
+  SESSION_ALREADY_FINISHED = 45000000
   INVALID_MODEL = 45000001
   # TODO(Deo): need to check what this code is, in tts
   UNKNOWN = 50000000
