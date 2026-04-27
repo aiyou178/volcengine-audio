@@ -140,6 +140,7 @@ class EventReceive(IntEnum):
   DialogCommonError = 599
   SESSION_ALREADY_FINISHED = 45000000
   INVALID_MODEL = 45000001
+  WAITING_NEXT_PACKET_TIMEOUT = 45000081
   # TODO(Deo): need to check what this code is, in tts
   UNKNOWN = 50000000
   # TODO(Deo): need to check what this code is, in dialogue

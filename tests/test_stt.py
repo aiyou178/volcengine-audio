@@ -2,6 +2,7 @@
 
 from volcengine_audio import (
   AudioCodec,
+  EventReceive,
   STTAudioFormatV3,
   STTBigmodelNoStreamLanguage,
   STTResultType,
@@ -15,6 +16,10 @@ class TestVolcengineAsrRequestV3Serialization:
   Context (inside Corpus) and SensitiveWordsFilter should be serialized as
   JSON strings, not as nested dicts.
   """
+
+  def test_event_receive_includes_waiting_next_packet_timeout(self):
+    """Protocol enum should include the STT waiting-packet timeout code."""
+    assert EventReceive.WAITING_NEXT_PACKET_TIMEOUT.value == 45000081
 
   def test_corpus_without_context_serializes_as_dict(self):
     """Test that Corpus without context is serialized as a dict."""
