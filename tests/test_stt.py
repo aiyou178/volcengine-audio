@@ -99,7 +99,7 @@ class TestVolcengineAsrRequestV3Serialization:
     dumped = asr_request.model_dump()
 
     # Context should be a JSON string
-    context_json = '{"hotwords":[{"word":"热词1"},{"word":"热词2"}],"context_type":null,"content_data":[]}'
+    context_json = '{"hotwords":[{"word":"热词1"},{"word":"热词2"}],"context_type":null,"context_data":[]}'
 
     assert dumped == {
       'user': {
@@ -229,7 +229,7 @@ class TestVolcengineAsrRequestV3Serialization:
     dumped = asr_request.model_dump()
 
     context_json = (
-      '{"hotwords":[{"word":"热词"}],"context_type":null,"content_data":[]}'
+      '{"hotwords":[{"word":"热词"}],"context_type":null,"context_data":[]}'
     )
     filter_json = '{"system_reserved_filter":true,"filter_with_empty":[],"filter_with_signed":["敏感词"]}'
 

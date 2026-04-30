@@ -153,20 +153,20 @@ class VolcengineAsrRequestV3(BaseModel):
           None, description='Context type'
         )
 
-        class ContentDataText(BaseModel):
+        class ContextDataText(BaseModel):
           text: str = Field(..., description='Context text')
 
-        class ContentDataImage(BaseModel):
+        class ContextDataImage(BaseModel):
           image_url: str = Field(..., description='Context image URL')
 
-        class ContentDataLocation(BaseModel):
+        class ContextDataLocation(BaseModel):
           class City(BaseModel):
             city_name: str
 
           loc_info: City = Field(..., description='City information')
 
-        content_data: list[
-          ContentDataText | ContentDataImage | ContentDataLocation
+        context_data: list[
+          ContextDataText | ContextDataImage | ContextDataLocation
         ] = Field(default_factory=list, description='Context data')
 
         @model_serializer(mode='wrap')
