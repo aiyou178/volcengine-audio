@@ -16,22 +16,22 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 ### Last SDK/doc sync
 
-* Local sync date: `2026-04-21`
+* Local sync date: `2026-05-01`
 * Package maintenance guide: [`AGENTS.md`](AGENTS.md)
 * Snapshot manifest: [`doc_sync/volcengine/manifest.json`](doc_sync/volcengine/manifest.json)
 * Refresh command: `uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`
 * These Volcengine docs are JS-rendered. The sync script opens the public docs pages with Playwright, captures the backing `api/doc/getDocDetail` JSON response, and writes cleaned `Result.Content` markdown snapshots to `doc_sync/volcengine/`.
 * The tracked snapshot files store only doc content text with span tags removed, while source metadata stays in `manifest.json`.
 * The snapshot files are tracked in git for future diffs, but they are not packed into wheels because this package only ships `src/volcengine_audio`.
-* Latest upstream review: April 2026 doc updates were primarily documentation changes, including newer TTS `X-Api-Key` auth guidance for the new console; the current SDK models did not require code changes in this sync.
+* Latest upstream review: May 2026 doc updates changed realtime dialogue protocol coverage and auth/documentation wording. The SDK now includes the refreshed realtime control events, conversation truncation helpers, realtime `tts.extra` metadata, STT `X-Api-Key` guidance in snapshots, and TTS billing wording updates.
 
 ### Tracked upstream sources
 
-* Realtime dialogue: `2026-03-13T08:41:28Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
-* TTS WebSocket bidirectional V3: `2026-04-15T11:39:37Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
-* TTS WebSocket unidirectional V3: `2026-04-15T11:39:51Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
-* TTS HTTP Chunked/SSE V3: `2026-04-15T11:40:01Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
-* STT streaming bigmodel: `2026-04-01T03:33:04Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+* Realtime dialogue: `2026-04-29T07:34:45Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+* TTS WebSocket bidirectional V3: `2026-04-24T03:45:24Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
+* TTS WebSocket unidirectional V3: `2026-04-24T03:44:56Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
+* TTS HTTP Chunked/SSE V3: `2026-04-24T03:44:50Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
+* STT streaming bigmodel: `2026-04-27T03:14:54Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
 
 ### Sync checklist
 
@@ -279,14 +279,20 @@ Realtime dialogue (combined TTS+STT) models and utilities.
 
 **Request Models:**
 - `SayHelloRequest`: Greeting message
+- `UpdateConfigRequest`: Runtime TTS/dialog config update
 - `ChatTTSTextRequest`: Text to synthesize with TTS
 - `ChatTextQueryRequest`: Text query for dialogue
+- `ChatRAGTextRequest`: External RAG text query
+- `ConversationCreateRequest`, `ConversationUpdateRequest`, `ConversationRetrieveRequest`, `ConversationTruncateRequest`, `ConversationDeleteRequest`: Context management requests
 
 **Response Models:**
 - `ASRInfoResponse`: ASR task info (first word detection)
 - `ASRResponseModel`: ASR recognition result
 - `ASREndedResponse`: ASR ended notification
 - `ChatResponseModel`: Chat response
+- `ChatTextQueryConfirmedResponse`: Text query acknowledgement
+- `ConversationCreatedResponse`, `ConversationUpdatedResponse`, `ConversationRetrievedResponse`, `ConversationTruncatedResponse`, `ConversationDeletedResponse`: Context management acknowledgements
+- `ConfigUpdatedResponse`: Runtime config update acknowledgement
 - `SessionStartedResponse`: Session started
 - `SessionFailedResponse`: Session failed
 
@@ -295,9 +301,14 @@ Realtime dialogue (combined TTS+STT) models and utilities.
   - `start_connection_payload()`: Start connection
   - `start_session_payload()`: Start dialogue session
   - `task_request_payload()`: Send audio for recognition
+  - `update_config_payload()`: Update runtime TTS/dialog config
   - `say_hello_payload()`: Send greeting
+  - `end_asr_payload()`: Signal end of audio in push-to-talk mode
   - `chat_tts_text_payload()`: Request TTS for text
   - `chat_text_query_payload()`: Send text query
+  - `chat_rag_text_payload()`: Send external RAG text
+  - `conversation_*_payload()`: Manage dialogue context
+  - `client_interrupt_payload()`: Interrupt server response in push-to-talk mode
   - `finish_session_payload()`: Finish session
 
 ## Protocol Details

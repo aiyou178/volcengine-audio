@@ -101,14 +101,18 @@ class EventSend(IntEnum):
   CancelSession = 101
   FinishSession = 102
   TaskRequest = 200
+  UpdateConfig = 201
   SayHello = 300
+  EndASR = 400
   ChatTTSText = 500
   ChatTextQuery = 501
   ChatRAGText = 502
   ConversationCreate = 510
   ConversationUpdate = 511
   ConversationRetrieve = 512
+  ConversationTruncate = 513
   ConversationDelete = 514
+  ClientInterrupt = 515
 
 
 class EventReceive(IntEnum):
@@ -122,6 +126,7 @@ class EventReceive(IntEnum):
   SessionFinished = 152
   SessionFailed = 153
   USAGE = 154
+  ConfigUpdated = 251
   TTSSentenceStart = 350
   TTSSentenceEnd = 351
   TTSResponse = 352
@@ -136,6 +141,7 @@ class EventReceive(IntEnum):
   ConversationCreated = 567
   ConversationUpdated = 568
   ConversationRetrieved = 569
+  ConversationTruncated = 570
   ConversationDeleted = 571
   DialogCommonError = 599
   SESSION_ALREADY_FINISHED = 45000000

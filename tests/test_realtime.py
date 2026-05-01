@@ -11,10 +11,13 @@ from volcengine_audio import (
   ConversationCreateRequest,
   ConversationDeleteRequest,
   ConversationRetrieveRequest,
+  ConversationTruncateRequest,
   ConversationUpdateRequest,
+  EventReceive,
   EventSend,
   RealtimeDialogueConfig,
   RealtimeDialogueFunctions,
+  UpdateConfigRequest,
 )
 
 
@@ -88,10 +91,20 @@ def test_start_session_supports_latest_doc_fields():
       ),
     ),
     tts=RealtimeDialogueConfig.TTSConfig(
+      extra=RealtimeDialogueConfig.TTSConfig.Extra(
+        explicit_dialect='sichuan',
+        aigc_metadata=RealtimeDialogueConfig.TTSConfig.Extra.AIGCMetadata(
+          enable=True,
+          content_producer='producer',
+          produce_id='produce-id',
+          content_propagator='propagator',
+          propagate_id='propagate-id',
+        ),
+      ),
       audio_config=RealtimeDialogueConfig.TTSConfig.AudioConfig(
         speech_rate=10,
         loudness_rate=5,
-      )
+      ),
     ),
   )
 
@@ -114,6 +127,8 @@ def test_start_session_supports_latest_doc_fields():
   assert meta['dialog']['extra']['enable_user_query_exit'] is True
   assert meta['dialog']['extra']['volc_websearch_type'] == 'web_agent'
   assert meta['dialog']['extra']['volc_websearch_bot_id'] == 'bot-id'
+  assert meta['tts']['extra']['explicit_dialect'] == 'sichuan'
+  assert meta['tts']['extra']['aigc_metadata']['produce_id'] == 'produce-id'
   assert meta['tts']['audio_config']['speech_rate'] == 10
   assert meta['tts']['audio_config']['loudness_rate'] == 5
 
@@ -144,6 +159,36 @@ def test_chat_rag_text_payload_uses_event_502():
   assert meta == {'external_rag': '外部知识'}
 
 
+def test_new_control_event_payloads_match_latest_docs():
+  update_payload = RealtimeDialogueFunctions.update_config_payload(
+    'session-1',
+    UpdateConfigRequest(
+      tts=UpdateConfigRequest.TTS(speaker='zh_female_new'),
+      dialog=UpdateConfigRequest.Dialog(dialog_id='dialog-1'),
+    ),
+  )
+  end_asr_payload = RealtimeDialogueFunctions.end_asr_payload('session-1')
+  interrupt_payload = RealtimeDialogueFunctions.client_interrupt_payload(
+    'session-1'
+  )
+
+  update_event, _, update_meta = _decode_session_json_payload(update_payload)
+  end_asr_event, _, end_asr_meta = _decode_session_json_payload(end_asr_payload)
+  interrupt_event, _, interrupt_meta = _decode_session_json_payload(
+    interrupt_payload
+  )
+
+  assert update_event == EventSend.UpdateConfig.value
+  assert update_meta == {
+    'tts': {'speaker': 'zh_female_new'},
+    'dialog': {'dialog_id': 'dialog-1'},
+  }
+  assert end_asr_event == EventSend.EndASR.value
+  assert end_asr_meta == {}
+  assert interrupt_event == EventSend.ClientInterrupt.value
+  assert interrupt_meta == {}
+
+
 def test_conversation_event_payloads_use_latest_event_ids():
   create_payload = RealtimeDialogueFunctions.conversation_create_payload(
     'session-1',
@@ -163,6 +208,10 @@ def test_conversation_event_payloads_use_latest_event_ids():
       items=[ConversationRetrieveRequest.Item(item_id='id1')]
     ),
   )
+  truncate_payload = RealtimeDialogueFunctions.conversation_truncate_payload(
+    'session-1',
+    ConversationTruncateRequest(item_id='id1', audio_end_ms=1200),
+  )
   delete_payload = RealtimeDialogueFunctions.conversation_delete_payload(
     'session-1',
     ConversationDeleteRequest(
@@ -175,16 +224,26 @@ def test_conversation_event_payloads_use_latest_event_ids():
   retrieve_event, _, retrieve_meta = _decode_session_json_payload(
     retrieve_payload
   )
+  truncate_event, _, truncate_meta = _decode_session_json_payload(
+    truncate_payload
+  )
   delete_event, _, delete_meta = _decode_session_json_payload(delete_payload)
 
   assert create_event == EventSend.ConversationCreate.value
   assert update_event == EventSend.ConversationUpdate.value
   assert retrieve_event == EventSend.ConversationRetrieve.value
+  assert truncate_event == EventSend.ConversationTruncate.value
   assert delete_event == EventSend.ConversationDelete.value
   assert create_meta['items'][0]['role'] == 'user'
   assert update_meta['items'][0]['item_id'] == 'id1'
   assert retrieve_meta['items'][0]['item_id'] == 'id1'
+  assert truncate_meta == {'item_id': 'id1', 'audio_end_ms': 1200}
   assert delete_meta['items'][0]['item_id'] == 'id1'
+
+
+def test_realtime_event_enums_include_latest_ack_ids():
+  assert EventReceive.ConfigUpdated.value == 251
+  assert EventReceive.ConversationTruncated.value == 570
 
 
 def test_asr_ended_response_accepts_empty_payload():

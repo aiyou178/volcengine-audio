@@ -20,42 +20,31 @@
 
 # 鉴权
 在 websocket 建连的 HTTP 请求头（Header 中）添加以下信息
+旧版本控制台
 
 | | | | \
 |Key |说明 |Value 示例 |
 |---|---|---|
 | | | | \
-|X-Api-App-Key |使用火山引擎控制台获取的APP ID，可参考 [控制台使用FAQ-Q1](/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F) |123456789 |
+|X-Api-App-Key |使用火山引擎控制台获取的APP ID，可参考 [控制台使用FAQ-Q1](https://www.volcengine.com/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F)（旧版控制台使用，新版控制台只需要X-Api-Key即可） |123456789 |
 | | | | \
-|X-Api-Access-Key |使用火山引擎控制台获取的Access Token，可参考 [控制台使用FAQ-Q1](/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F) |your-access-key |
+|X-Api-Access-Key |使用火山引擎控制台获取的Access Token，可参考 [控制台使用FAQ-Q1](https://www.volcengine.com/docs/6561/196768#q1%EF%BC%9A%E5%93%AA%E9%87%8C%E5%8F%AF%E4%BB%A5%E8%8E%B7%E5%8F%96%E5%88%B0%E4%BB%A5%E4%B8%8B%E5%8F%82%E6%95%B0appid%EF%BC%8Ccluster%EF%BC%8Ctoken%EF%BC%8Cauthorization-type%EF%BC%8Csecret-key-%EF%BC%9F)（旧版控制台使用，新版控制台只需要X-Api-Key即可） |your-access-key |
 | | | | \
-|X-Api-Resource-Id |表示调用服务的资源信息 ID |豆包流式语音识别模型1.0 |\
+|X-Api-Resource-Id |表示调用服务的资源信息 ID |豆包流式语音识别模型1.0  |\
 | | | |\
-| | |* 小时版：volc.bigasr.sauc.duration |\
-| | |* 并发版：volc.bigasr.sauc.concurrent |\
+| | |* 小时版：volc.bigasr.sauc.duration  |\
+| | |* 并发版：volc.bigasr.sauc.concurrent  |\
 | | | |\
-| | |豆包流式语音识别模型2.0 |\
+| | |豆包流式语音识别模型2.0  |\
 | | | |\
-| | |* 小时版：volc.seedasr.sauc.duration |\
-| | |* 并发版：volc.seedasr.sauc.concurrent |
-|^^|^^|^^| \
-| | | |
-|^^|^^|^^| \
-| | | |
+| | |* 小时版：volc.seedasr.sauc.duration  |\
+| | |* 并发版：volc.seedasr.sauc.concurrent  |
 | | | | \
-|X-Api-Connect-Id |用于追踪当前连接的标志 ID，推荐设置UUID等 |67ee89ba-7050-4c04-a3d7-ac61a63499b3 |
+|X-Api-Request-Id |用于提交和查询任务的任务ID，推荐传入随机生成的UUID |67ee89ba-7050-4c04-a3d7-ac61a63499b3 |
+| | | | \
+|X-Api-Sequence |发包序号，固定值，-1 | |
 
-websocket 握手成功后，会返回这些 Response header。强烈建议记录X-Tt-Logid（logid）作为排错线索。
-
-| | | | \
-|Key |说明 |Value 示例 |
-|---|---|---|
-| | | | \
-|X-Api-Connect-Id |用于追踪当前调用信息的标志 ID，推荐用UUID等 |67ee89ba-7050-4c04-a3d7-ac61a63499b3 |
-| | | | \
-|X-Tt-Logid |服务端返回的 logid，建议用户获取和打印方便定位问题 |202407261553070FACFE6D19421815D605 |
-
-```HTTP
+```Plain Text
 // 标准 websocket 请求头示例
 GET /api/v3/sauc/bigmodel
 Host: openspeech.bytedance.com
@@ -67,6 +56,52 @@ X-Api-Connect-Id: 随机生成的UUID
 ## 返回 Header
 X-Tt-Logid: 202407261553070FACFE6D19421815D605
 ```
+
+新版本控制台
+
+| | | | \
+|Key |说明 |Value 示例 |
+|---|---|---|
+| | | | \
+|X-Api-Key |使用火山引擎控制台获取的APP Key，可参考 [快速入门（新版控制台）](https://console.volcengine.com/speech/new/setting/apikeys?projectName=default) |123456789 |
+| | | | \
+|X-Api-Resource-Id |表示调用服务的资源信息 ID |豆包流式语音识别模型1.0  |\
+| | | |\
+| | |* 小时版：volc.bigasr.sauc.duration  |\
+| | |* 并发版：volc.bigasr.sauc.concurrent  |\
+| | | |\
+| | |豆包流式语音识别模型2.0  |\
+| | | |\
+| | |* 小时版：volc.seedasr.sauc.duration  |\
+| | |* 并发版：volc.seedasr.sauc.concurrent  |
+| | | | \
+|X-Api-Request-Id |用于提交和查询任务的任务ID，推荐传入随机生成的UUID |67ee89ba-7050-4c04-a3d7-ac61a63499b3 |
+| | | | \
+|X-Api-Sequence |发包序号，固定值，-1 | |
+
+```Plain Text
+// 标准 websocket 请求头示例
+GET /api/v3/sauc/bigmodel
+Host: openspeech.bytedance.com
+X-Api-App-Key: 123456789
+X-Api-Access-Key: your-access-key
+X-Api-Resource-Id: volc.bigasr.sauc.duration
+X-Api-Connect-Id: 随机生成的UUID
+
+## 返回 Header
+X-Tt-Logid: 202407261553070FACFE6D19421815D605
+```
+
+websocket 握手成功后，会返回这些 Response header。强烈建议记录X-Tt-Logid（logid）作为排错线索。
+
+| | | | \
+|Key |说明 |Value 示例 |
+|---|---|---|
+| | | | \
+|X-Api-Connect-Id |用于追踪当前调用信息的标志 ID，推荐用UUID等 |67ee89ba-7050-4c04-a3d7-ac61a63499b3 |
+| | | | \
+|X-Tt-Logid |服务端返回的 logid，建议用户获取和打印方便定位问题 |202407261553070FACFE6D19421815D605 |
+
 
 
 # 协议详情
@@ -173,7 +208,7 @@ Payload： 包含音频的元数据以及 server 所需的相关参数，一般�
 |audio |音频相关配置 |1 |dict |✓ | |
 | | | | | | | \
 |language |指定可识别的语言 |2 |string | |**注意：仅流式输入模式(bigmodel_nostream)支持此参数，二遍不支持** |\
-| | | | | |当该键为空时，该模型支持**中英文、上海话、闽南语，四川、陕西、粤语**识别。当将其设置为下方特定键时，它可以识别指定语言。 |\
+| | | | | |当该键为空时，该模型支持**中英文、上海话、闽南语，四川、陕西、粤语、冀鲁、兰银、江淮**识别。当将其设置为下方特定键时，它可以识别指定语言。 |\
 | | | | | |```Python |\
 | | | | | |中文普通话 zh-CN |\
 | | | | | |英语：en-US |\

@@ -17,22 +17,22 @@
 
 ### 最近一次 SDK/文档同步
 
-* 本地同步日期：`2026-04-21`
+* 本地同步日期：`2026-05-01`
 * 维护说明：[`AGENTS.md`](AGENTS.md)
 * 快照清单：[`doc_sync/volcengine/manifest.json`](doc_sync/volcengine/manifest.json)
 * 刷新命令：`uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`
 * Volcengine 文档页面是 JS 渲染的。同步脚本会通过 Playwright 打开公开页面，拦截其底层 `api/doc/getDocDetail` JSON 响应，并把清洗后的 `Result.Content` 文本快照写入 `doc_sync/volcengine/`。
 * 跟踪文件只保存文档正文内容，并在写入前去掉 `<span>` 标签；更新时间、来源链接和哈希等元数据保存在 `manifest.json`。
 * 这些快照文件会提交到仓库中，方便下次直接 `git diff` 查出字段变化；它们不在 wheel 中，因为当前构建只打包 `src/volcengine_audio`。
-* 本轮上游检查结论：2026 年 4 月的更新主要是文档层面的调整，包括 TTS 在新版控制台下改用 `X-Api-Key` 的鉴权说明；当前 SDK schema 与 helper 暂不需要代码改动。
+* 本轮上游检查结论：2026 年 5 月刷新后，实时对话文档补充了新的控制事件、上下文截断和 `tts.extra` 元数据；SDK 已同步相关 enum、schema 与 helper。STT 快照补充新版控制台 `X-Api-Key` 说明，TTS 快照主要是计费文案修正。
 
 ### 当前跟踪的上游文档
 
-* 实时对话：`2026-03-13T08:41:28Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
-* TTS WebSocket 双向流式 V3：`2026-04-15T11:39:37Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
-* TTS WebSocket 单向流式 V3：`2026-04-15T11:39:51Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
-* TTS HTTP Chunked/SSE V3：`2026-04-15T11:40:01Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
-* STT 大模型流式识别：`2026-04-01T03:33:04Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+* 实时对话：`2026-04-29T07:34:45Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+* TTS WebSocket 双向流式 V3：`2026-04-24T03:45:24Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
+* TTS WebSocket 单向流式 V3：`2026-04-24T03:44:56Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
+* TTS HTTP Chunked/SSE V3：`2026-04-24T03:44:50Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
+* STT 大模型流式识别：`2026-04-27T03:14:54Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
 
 ### 后续同步建议
 

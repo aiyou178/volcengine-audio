@@ -56,7 +56,7 @@
 | | | | | |\
 | | | | |* `seed-tts-2.0`：对应计费商品为 “语音合成2.0字符版“ |\
 | | | | |* `seed-tts-1.0`：对应计费商品为“语音合成1.0字符版” |\
-| | | | |* `seed-tts-1.0-concurr`：对应计费商品为“声音复刻1.0并发版“ |\
+| | | | |* `seed-tts-1.0-concurr`：对应计费商品为“语音合成1.0并发版“ |\
 | | | | | |\
 | | | | |**豆包声音复刻大模型** |\
 | | | | |语音合成接口通过 `X-Api-Resource-Id` 参数来选择不同的版本效果： |\
@@ -110,7 +110,7 @@ headers = {
 | | | | | |\
 | | | | |* `seed-tts-2.0`：对应计费商品为 “语音合成2.0字符版“ |\
 | | | | |* `seed-tts-1.0`：对应计费商品为“语音合成1.0字符版” |\
-| | | | |* `seed-tts-1.0-concurr`：对应计费商品为“声音复刻1.0并发版“ |\
+| | | | |* `seed-tts-1.0-concurr`：对应计费商品为“语音合成1.0并发版“ |\
 | | | | | |\
 | | | | |**豆包声音复刻大模型** |\
 | | | | |语音合成接口通过 `X-Api-Resource-Id` 参数来选择不同的版本效果： |\
@@ -1353,7 +1353,7 @@ pip3 install -e .
 > \`<voice_type>\`替换为您预期使用的音色ID，例如\`zh_female_cancan_mars_bigtts\`。
 
 \`\`\`Bash
-python3 examples/volcengine/bidirection.py --appid <appid> --access_token <access_token> --voice_type <voice_type> --text "你好，我是火山引擎的语音合成服务。这是一个美好的旅程。" 
+python3 examples/volcengine/bidirection.py --appid <appid> --access_token <access_token> --voice_type <voice_type> --text "你好，我是火山引擎的语音合成服务。这是一个美好的旅程。"
 \`\`\`
 
 `}></RenderMd></Tabs.TabPane>

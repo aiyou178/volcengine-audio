@@ -45,6 +45,7 @@ from .realtime import (
   ChatTextQueryConfirmedResponse,
   ChatTextQueryRequest,
   ChatTTSTextRequest,
+  ConfigUpdatedResponse,
   ConnectionFailedResponse,
   ConversationCreatedResponse,
   ConversationCreateRequest,
@@ -52,6 +53,8 @@ from .realtime import (
   ConversationDeleteRequest,
   ConversationRetrievedResponse,
   ConversationRetrieveRequest,
+  ConversationTruncatedResponse,
+  ConversationTruncateRequest,
   ConversationUpdatedResponse,
   ConversationUpdateRequest,
   RealtimeDialogueConfig,
@@ -61,6 +64,7 @@ from .realtime import (
   SayHelloRequest,
   SessionFailedResponse,
   SessionStartedResponse,
+  UpdateConfigRequest,
 )
 
 # STT exports
@@ -161,6 +165,7 @@ __all__ = [
   'ChatTextQueryConfirmedResponse',
   'ChatTTSTextRequest',
   'ChatTextQueryRequest',
+  'ConfigUpdatedResponse',
   'ConnectionFailedResponse',
   'ConversationCreateRequest',
   'ConversationCreatedResponse',
@@ -168,6 +173,8 @@ __all__ = [
   'ConversationDeletedResponse',
   'ConversationRetrieveRequest',
   'ConversationRetrievedResponse',
+  'ConversationTruncateRequest',
+  'ConversationTruncatedResponse',
   'ConversationUpdateRequest',
   'ConversationUpdatedResponse',
   'RealtimeDialogueConfig',
@@ -177,4 +184,5 @@ __all__ = [
   'SayHelloRequest',
   'SessionFailedResponse',
   'SessionStartedResponse',
+  'UpdateConfigRequest',
 ]

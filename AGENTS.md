@@ -13,6 +13,12 @@ services. It provides typed schemas and request/response helpers for:
 - Realtime Dialogue
 - Shared websocket/binary protocol helpers
 
+Keep this guide in sync with `README.md`. The README is the user-facing
+package guide and records the local SDK/doc sync date, tracked upstream
+timestamps, and the latest upstream review summary; this file should carry the
+agent-facing workflow and code-boundary details that make those README claims
+actionable.
+
 Core maintenance entrypoints:
 
 - `src/volcengine_audio/stt.py`
@@ -55,6 +61,27 @@ first stop during maintenance:
 These files are tracked in git so future syncs can diff upstream changes
 quickly. They are repo-only maintenance artifacts and are not packed into
 wheels because the wheel build only includes `src/volcengine_audio`.
+
+Current tracked upstream timestamps from `manifest.json` and `README.md`:
+
+- Realtime dialogue: `2026-04-29T07:34:45Z`
+- TTS WebSocket bidirectional V3: `2026-04-24T03:45:24Z`
+- TTS WebSocket unidirectional V3: `2026-04-24T03:44:56Z`
+- TTS HTTP Chunked/SSE V3: `2026-04-24T03:44:50Z`
+- STT streaming bigmodel: `2026-04-27T03:14:54Z`
+
+Latest local sync review:
+
+- Local sync date in README: `2026-05-01`.
+- Realtime docs added concrete protocol surface that belongs in the SDK:
+  `UpdateConfig`, `EndASR`, `ConversationTruncate`, `ClientInterrupt`,
+  `ConfigUpdated`, `ConversationTruncated`, realtime `tts.extra`
+  `explicit_dialect`, and realtime `tts.extra.aigc_metadata`.
+- STT docs now separate old-console app/access-key headers from new-console
+  `X-Api-Key`, while the request schema still uses `context_data` for dialog
+  context and `EventReceive.WAITING_NEXT_PACKET_TIMEOUT` for `45000081`.
+- TTS docs only changed the `seed-tts-1.0-concurr` billing wording in this
+  refresh; the existing resource/model schema remains valid.
 
 Snapshot format guidance:
 
@@ -142,6 +169,9 @@ Important notes:
 - The public docs pages are JS-rendered.
 - Direct CLI requests to the JSON endpoint may return unauthorized.
 - Prefer Playwright response interception over raw `curl` scraping.
+- If the task is only to sync `AGENTS.md` or `README.md` with already-tracked
+  snapshots, do not rerun Playwright. Read `manifest.json`, the README files,
+  and `git diff -- doc_sync/volcengine` instead.
 
 ## 8) Coding Standards (Package-Specific)
 
@@ -217,9 +247,12 @@ rg -n "keep_alive|push_to_talk|concurr|UpdatedTime" packages/volcengine-audio
 
 High-signal fields to watch:
 
-- Realtime `dialog.extra`, `tts.audio_config`, `asr.extra`
+- Realtime `dialog.extra`, `tts.extra`, `tts.audio_config`, `asr.extra`
+- Realtime control/context events: `UpdateConfig`, `EndASR`,
+  `ConversationTruncate`, `ClientInterrupt`, and matching ack events.
 - TTS resource IDs and `req_params.additions`
-- STT language enums and optional request flags
+- STT language enums, `context_data`, old/new console auth headers, and
+  optional request flags
 - Event IDs and response payload shapes
 
 ## 11) Validation

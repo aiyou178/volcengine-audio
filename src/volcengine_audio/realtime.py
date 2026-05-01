@@ -166,6 +166,34 @@ class RealtimeDialogueConfig(BaseModel):
     extra: Extra = Field(default_factory=Extra)
 
   class TTSConfig(BaseModel):
+    class Extra(BaseModel):
+      """Realtime TTS extra config from the StartSession docs."""
+
+      class ExplicitDialect(StrEnum):
+        dongbei = 'dongbei'
+        sichuan = 'sichuan'
+        shaanxi = 'shaanxi'
+
+      class AIGCMetadata(BaseModel):
+        enable: bool = Field(False, description='Enable implicit watermark')
+        content_producer: str = Field(
+          '', description='TTS service provider name or code'
+        )
+        produce_id: str = Field('', description='Content production ID')
+        content_propagator: str = Field(
+          '', description='Content distribution service provider name or code'
+        )
+        propagate_id: str = Field('', description='Content distribution ID')
+
+      explicit_dialect: ExplicitDialect | str | None = Field(
+        None,
+        description='Dialect for supported 2.0 vv voices',
+      )
+      aigc_metadata: AIGCMetadata | None = Field(
+        None,
+        description='AIGC provenance metadata for 2.0 implicit watermarking',
+      )
+
     class AudioConfig(BaseModel):
       class Format(StrEnum):
         pcm = 'pcm'
@@ -203,6 +231,7 @@ class RealtimeDialogueConfig(BaseModel):
       default=Speaker.zh_female_vv_jupiter_bigtts, description='Speaker voice'
     )
 
+    extra: Extra | None = Field(None, description='TTS extra configuration')
     audio_config: AudioConfig = Field(default_factory=AudioConfig)
 
   class Asr(BaseModel):
@@ -308,6 +337,29 @@ class ChatRAGTextRequest(BaseModel):
   )
 
 
+class UpdateConfigRequest(BaseModel):
+  """Request model for UpdateConfig event."""
+
+  class TTS(BaseModel):
+    speaker: RealtimeDialogueConfig.TTSConfig.Speaker | str | None = Field(
+      None, description='Speaker voice update'
+    )
+
+  class Dialog(BaseModel):
+    bot_name: str | None = Field(None, description='Bot name update')
+    system_role: str | None = Field(None, description='System role update')
+    speaking_style: str | None = Field(
+      None, description='Speaking style update'
+    )
+    dialog_id: str | None = Field(None, description='Dialog ID update')
+    location: RealtimeDialogueConfig.DialogConfig.Location | None = Field(
+      None, description='Location update'
+    )
+
+  tts: TTS | None = Field(None, description='TTS config updates')
+  dialog: Dialog | None = Field(None, description='Dialog config updates')
+
+
 class ConversationCreateRequest(BaseModel):
   """Request model for ConversationCreate event."""
 
@@ -352,6 +404,15 @@ class ConversationDeleteRequest(BaseModel):
     item_id: str = Field(..., description='Context item identifier')
 
   items: list[Item] = Field(..., min_length=1)
+
+
+class ConversationTruncateRequest(BaseModel):
+  """Request model for ConversationTruncate event."""
+
+  item_id: str = Field(..., description='Context item identifier')
+  audio_end_ms: int = Field(
+    ..., ge=0, description='Played audio duration to preserve, in ms'
+  )
 
 
 class ASRInfoResponse(BaseModel):
@@ -474,6 +535,14 @@ class ConversationDeletedResponse(BaseModel):
   )
 
 
+class ConfigUpdatedResponse(BaseModel):
+  """Response model for ConfigUpdated event."""
+
+
+class ConversationTruncatedResponse(BaseModel):
+  """Response model for ConversationTruncated event."""
+
+
 class ConnectionFailedResponse(BaseModel):
   """Response model for ConnectionFailed event"""
 
@@ -571,6 +640,18 @@ class RealtimeDialogueFunctions:
     return payload
 
   @staticmethod
+  def update_config_payload(
+    session_id: str, request: UpdateConfigRequest
+  ) -> bytes:
+    """Create UpdateConfig event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.UpdateConfig,
+      session_id=session_id,
+      request_meta=request.model_dump(exclude_none=True),
+    )
+
+  @staticmethod
   def say_hello_payload(
     session_id: str, hello_request: SayHelloRequest
   ) -> bytes:
@@ -580,6 +661,16 @@ class RealtimeDialogueFunctions:
       EventSend.SayHello,
       session_id=session_id,
       request_meta=hello_request.model_dump(),
+    )
+
+  @staticmethod
+  def end_asr_payload(session_id: str) -> bytes:
+    """Create EndASR event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.EndASR,
+      session_id=session_id,
+      request_meta={},
     )
 
   @staticmethod
@@ -657,6 +748,18 @@ class RealtimeDialogueFunctions:
     )
 
   @staticmethod
+  def conversation_truncate_payload(
+    session_id: str, request: ConversationTruncateRequest
+  ) -> bytes:
+    """Create ConversationTruncate event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.ConversationTruncate,
+      session_id=session_id,
+      request_meta=request.model_dump(exclude_none=True),
+    )
+
+  @staticmethod
   def conversation_delete_payload(
     session_id: str, request: ConversationDeleteRequest
   ) -> bytes:
@@ -666,6 +769,16 @@ class RealtimeDialogueFunctions:
       EventSend.ConversationDelete,
       session_id=session_id,
       request_meta=request.model_dump(exclude_none=True),
+    )
+
+  @staticmethod
+  def client_interrupt_payload(session_id: str) -> bytes:
+    """Create ClientInterrupt event payload."""
+    return RealtimeDialogueFunctions._calculate_payload(
+      MessageType.FULL_CLIENT_REQUEST,
+      EventSend.ClientInterrupt,
+      session_id=session_id,
+      request_meta={},
     )
 
   @staticmethod
