@@ -21,6 +21,10 @@ class TestVolcengineAsrRequestV3Serialization:
     """Protocol enum should include the STT waiting-packet timeout code."""
     assert EventReceive.WAITING_NEXT_PACKET_TIMEOUT.value == 45000081
 
+  def test_event_receive_includes_resource_not_granted(self):
+    """Protocol enum should include the STT resource permission code."""
+    assert EventReceive.REQUESTED_RESOURCE_NOT_GRANTED.value == 45000030
+
   def test_corpus_without_context_serializes_as_dict(self):
     """Test that Corpus without context is serialized as a dict."""
     corpus = VolcengineAsrRequestV3.Request.Corpus(
