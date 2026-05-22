@@ -514,11 +514,16 @@ class VolcengineTTSFunctions:
     except ValueError:
       logging.warning('unknown protocol %r', protocol_version)
     else:
-      if protocol_version != ProtocolVersion.V1:
+      if protocol_version != ProtocolVersion.V1:  # pragma: no cover
         logging.warning('Protocol version mismatch %s', protocol_version)
 
-    if HeaderSize(header_size) != HeaderSize.SIZE_4:
-      logging.warning('Header size mismatch %s', header_size)
+    try:
+      header_size_value = HeaderSize(header_size)
+    except ValueError:
+      logging.warning('unknown header size %r', header_size)
+    else:
+      if header_size_value != HeaderSize.SIZE_4:  # pragma: no cover
+        logging.warning('Header size mismatch %s', header_size_value)
 
     # Extract message type and specific flags
     message_type_byte = data[1]

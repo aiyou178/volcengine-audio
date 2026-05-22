@@ -6,6 +6,8 @@ import pytest
 
 from volcengine_audio import (
   ASREndedResponse,
+  ChatTextQueryRequest,
+  ChatTTSTextRequest,
   ChatRAGTextRequest,
   ChatResponseModel,
   ConversationCreateRequest,
@@ -17,6 +19,7 @@ from volcengine_audio import (
   EventSend,
   RealtimeDialogueConfig,
   RealtimeDialogueFunctions,
+  SayHelloRequest,
   UpdateConfigRequest,
 )
 
@@ -145,6 +148,10 @@ def test_dialog_context_requires_even_length():
         ]
       )
     )
+  with pytest.raises(ValueError, match='combined length'):
+    RealtimeDialogueConfig(
+      dialog=RealtimeDialogueConfig.DialogConfig(system_role='x' * 4001)
+    )
 
 
 def test_chat_rag_text_payload_uses_event_502():
@@ -157,6 +164,59 @@ def test_chat_rag_text_payload_uses_event_502():
   assert event == EventSend.ChatRAGText.value
   assert session_id == 'session-1'
   assert meta == {'external_rag': '外部知识'}
+
+
+def test_connection_audio_and_text_payload_helpers_use_real_frames():
+  start_connection = RealtimeDialogueFunctions.start_connection_payload()
+  finish_connection = RealtimeDialogueFunctions.finish_connection_payload()
+  finish_session = RealtimeDialogueFunctions.finish_session_payload('session-1')
+  task_payload = RealtimeDialogueFunctions.task_request_payload(
+    'session-1',
+    b'audio',
+  )
+  say_hello_payload = RealtimeDialogueFunctions.say_hello_payload(
+    'session-1',
+    SayHelloRequest(content='hello'),
+  )
+  tts_payload = RealtimeDialogueFunctions.chat_tts_text_payload(
+    'session-1',
+    ChatTTSTextRequest(start=True, content='hello', end=True),
+  )
+  query_payload = RealtimeDialogueFunctions.chat_text_query_payload(
+    'session-1',
+    ChatTextQueryRequest(content='question'),
+  )
+  retrieve_payload = RealtimeDialogueFunctions.conversation_retrieve_payload(
+    'session-1'
+  )
+
+  assert struct.unpack('>I', start_connection[4:8])[0] == (
+    EventSend.StartConnection.value
+  )
+  assert struct.unpack('>I', finish_connection[4:8])[0] == (
+    EventSend.FinishConnection.value
+  )
+  assert _decode_session_json_payload(finish_session) == (
+    EventSend.FinishSession.value,
+    'session-1',
+    {},
+  )
+  assert (
+    struct.unpack('>I', task_payload[4:8])[0] == EventSend.TaskRequest.value
+  )
+  assert task_payload.endswith(b'audio')
+  assert _decode_session_json_payload(say_hello_payload)[2] == {
+    'content': 'hello'
+  }
+  assert _decode_session_json_payload(tts_payload)[2] == {
+    'start': True,
+    'content': 'hello',
+    'end': True,
+  }
+  assert _decode_session_json_payload(query_payload)[2] == {
+    'content': 'question'
+  }
+  assert _decode_session_json_payload(retrieve_payload)[2] == {}
 
 
 def test_new_control_event_payloads_match_latest_docs():
