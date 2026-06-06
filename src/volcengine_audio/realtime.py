@@ -9,7 +9,7 @@ import struct
 from enum import StrEnum
 from typing import Literal, TypedDict
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .protocol import (
   EventSend,
@@ -169,6 +169,8 @@ class RealtimeDialogueConfig(BaseModel):
     class Extra(BaseModel):
       """Realtime TTS extra config from the StartSession docs."""
 
+      model_config = ConfigDict(populate_by_name=True)
+
       class ExplicitDialect(StrEnum):
         dongbei = 'dongbei'
         sichuan = 'sichuan'
@@ -192,6 +194,11 @@ class RealtimeDialogueConfig(BaseModel):
       aigc_metadata: AIGCMetadata | None = Field(
         None,
         description='AIGC provenance metadata for 2.0 implicit watermarking',
+      )
+      tts_2_0_model: Literal['expressive'] | str | None = Field(
+        None,
+        alias='tts_2.0_model',
+        description='Voice clone 2.0 model effect for O2.0 sessions',
       )
 
     class AudioConfig(BaseModel):
@@ -599,7 +606,7 @@ class RealtimeDialogueFunctions:
       MessageType.FULL_CLIENT_REQUEST,
       EventSend.StartSession,
       session_id=session_id,
-      request_meta=config.model_dump(exclude_none=True),
+      request_meta=config.model_dump(exclude_none=True, by_alias=True),
     )
 
   @staticmethod

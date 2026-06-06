@@ -14,15 +14,16 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 ## Documentation
 
-Last SDK/doc sync: `2026-05-01`.
+Last SDK/doc sync: `2026-06-06`.
 
 ### Current Tracked Sources
 
-- Realtime dialogue: `2026-04-29T07:34:45Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
-- TTS WebSocket bidirectional V3: `2026-04-24T03:45:24Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
-- TTS WebSocket unidirectional V3: `2026-04-24T03:44:56Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
-- TTS HTTP Chunked/SSE V3: `2026-04-24T03:44:50Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
-- STT streaming bigmodel: `2026-04-27T03:14:54Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+- Realtime dialogue: `2026-06-04T10:15:01Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+- TTS WebSocket bidirectional V3: `2026-05-25T08:51:30Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
+- TTS WebSocket unidirectional V3: `2026-05-25T08:49:18Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
+- TTS HTTP Chunked/SSE V3: `2026-05-25T09:03:36Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
+- STT streaming bigmodel: `2026-05-29T02:49:48Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+- TTS voice list: `2026-05-26T05:41:00Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
 
 ## Installation
 
@@ -224,6 +225,7 @@ Speech-to-Text (ASR) models and utilities.
 
 **Request Models:**
 - `VolcengineAsrRequestV3`: ASR V3 API request
+  - `request.enable_auto_lang`: Auto-detect language for non-streaming STT
 - `VolcengineAsrRequestV2`: ASR V2 API request
 
 **Response Models:**
@@ -299,7 +301,8 @@ Realtime dialogue (combined TTS+STT) models and utilities.
 **Configuration:**
 - `RealtimeDialogueConfig`: Complete dialogue session configuration
   - `DialogConfig`: Bot persona, speaking style, location
-  - `TTSConfig`: Voice type and audio settings
+  - `TTSConfig`: Voice type, audio settings, and `tts_2_0_model` wire alias
+    `tts_2.0_model`
   - `Asr`: ASR-specific settings
 
 **Request Models:**

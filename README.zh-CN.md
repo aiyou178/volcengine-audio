@@ -15,15 +15,16 @@
 
 ## 文档
 
-最近一次 SDK/文档同步：`2026-05-01`。
+最近一次 SDK/文档同步：`2026-06-06`。
 
 ### 当前跟踪的上游文档
 
-* 实时对话：`2026-04-29T07:34:45Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
-* TTS WebSocket 双向流式 V3：`2026-04-24T03:45:24Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
-* TTS WebSocket 单向流式 V3：`2026-04-24T03:44:56Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
-* TTS HTTP Chunked/SSE V3：`2026-04-24T03:44:50Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
-* STT 大模型流式识别：`2026-04-27T03:14:54Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+* 实时对话：`2026-06-04T10:15:01Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+* TTS WebSocket 双向流式 V3：`2026-05-25T08:51:30Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
+* TTS WebSocket 单向流式 V3：`2026-05-25T08:49:18Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
+* TTS HTTP Chunked/SSE V3：`2026-05-25T09:03:36Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
+* STT 大模型流式识别：`2026-05-29T02:49:48Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+* TTS 音色列表：`2026-05-26T05:41:00Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
 
 ## 安装
 

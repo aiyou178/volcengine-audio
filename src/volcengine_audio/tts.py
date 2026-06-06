@@ -53,9 +53,9 @@ class TTSBigmodelModelType(StrEnum):
   seed_tts_1_1 = 'seed-tts-1.1'
   """Improved 1.1 model with better quality and latency."""
   seed_tts_2_0_expressive = 'seed-tts-2.0-expressive'
-  """2.0 expressive model with QA and COT support."""
+  """2.0 expressive model with speech instruction QA and tag COT support."""
   seed_tts_2_0_standard = 'seed-tts-2.0-standard'
-  """2.0 standard model with more stable expression and no QA/COT."""
+  """2.0 standard model with lower latency and no QA/COT support."""
 
 
 TTS_RESOURCE_IDS_1_0 = frozenset(
@@ -259,7 +259,9 @@ class TTSReqParams(BaseModel):
       ge=0,
       le=100,
     )
-    explicit_language: str | None = Field(None, description='Explicit language')
+    explicit_language: str | None = Field(
+      None, description='Explicit synthesis language'
+    )
     context_language: str | None = Field(None, description='Reference language')
     unsupported_char_ratio_thresh: float = Field(
       0.3,
@@ -310,12 +312,12 @@ class TTSReqParams(BaseModel):
     )
 
     context_texts: list[str] | None = Field(
-      None, description='Context text, only first element is effective'
+      None, description='Speech instruction context, only first item is effective'
     )
     section_id: str = Field(
-      '', description='Other TTS session ID to assist current synthesis'
+      '', description='Multi-turn context ID shared across serial TTS requests'
     )
-    use_tag_parser: bool = Field(False, description='Enable COT tag parser')
+    use_tag_parser: bool = Field(False, description='Enable speech tag COT parser')
 
     @model_validator(mode='after')
     def check_markdown_dependent_options(self):

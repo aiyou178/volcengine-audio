@@ -18,20 +18,24 @@
 |克隆音色（`ICL_`或者`S_`开头的音色名称） |❌ |❌ |✅ |❌ |
 | | | | | | \
 |克隆音色2.0（`saturn_`或者`S_`开头的音色名称） |❌ |✅ |❌ |✅ |
+| | | | | | \
+|模型最大上下文长度 |—— |12K |—— |12K |
 
 
+   * O 版本代表 Omni，多模态模型路线；SC 版本代表 Strong Character，角色扮演模型路线，主要强化人设表达和拟人化互动能力
+      * 当前 O 版本与 SC 版本已停止独立迭代维护，产品能力将逐步收敛至对应的 2.0 版本，并以后者作为后续主推方向
    * O版本和SC版本都支持客户配置System Prompt，但是具体的配置字段会存在差异：
       * O版本以及O2.0版本可以配置bot_name、system_role、speaking_style字段，参考人设部分
       * SC版本以及SC2.0版本可以配置character_manifest字段，参考角色描述部分
    * O2.0 版本相较于 O 版本的主要优化点：
       * **整体能力升级**：显著提升模型的推理能力与基础语音理解、生成能力
       * **唱歌能力增强**：引入合规版权曲库，支持更高质量、更丰富的演唱表现
-      * **热修复能力**：支持音频级热修复，包括 TN 转写修正与发音问题的在线修复
+      * **音频级热修复**：支持在线修复 TN 转写与发音问题，提升问题响应效率，降低版本发布依赖。
    * SC2.0 版本相较于 SC 版本的主要优化点：
       * **角色演绎能力提升**：显著增强模型的角色塑造与拟人化表达能力
       * **角色控制能力增强**：完善角色控制指令体系，模型输出文本可包含角色相关的动作与表情描述
       * **音色克隆能力升级**：提升音色克隆的相似度与稳定性
-      * **热修复能力**：支持音频级热修复，目前覆盖TN转写修正
+      * **音频级热修复**：支持在线修复 TN 转写与发音问题，提升问题响应效率，降低版本发布依赖。
 2. 客户端上传音频格式要求PCM（脉冲编码调制，未经压缩的的音频格式）、单声道、采样率16000、每个采样点用`int16`表示、字节序为小端序。
    1. 除此之外，工程链路升级支持客户端**麦克风输入**音频opus格式，服务内部会转为pcm格式再进行识别处理
 
@@ -48,7 +52,7 @@
 ```
 
 
-3. 服务端默认返回的是 OGG 封装的 Opus 音频，兼顾压缩效率与传输性能。
+3. 服务端默认返回的是 OGG 封装的 Opus 音频，兼顾压缩效率与传输性能
 4. 若客户端在 StartSession事件中增加TTS配置，服务端可返回 PCM 格式的音频流。具体请求参数如下所示：
    * 单声道、24000Hz 采样率、32bit位深、字节序为小端序；
 
@@ -100,55 +104,7 @@
 
 6. 端到端模型SC版本服务端新增21个官方克隆音色，客户端在使用这些音色时候需要在StartSession事件中的TTS 配置指定对应的克隆音色。同时，角色描述在服务端已经配置好了，客户端在请求API时候无需配置character_manifest字段。
 
-SC版本
-
-
-1. ICL_zh_female_aojiaonvyou_tob
-2. ICL_zh_female_bingjiaojiejie_tob
-3. ICL_zh_female_chengshujiejie_tob
-4. ICL_zh_female_keainvsheng_tob
-5. ICL_zh_female_nuanxinxuejie_tob
-6. ICL_zh_female_tiexinnvyou_tob
-7. ICL_zh_female_wenrouwenya_tob
-8. ICL_zh_female_wumeiyujie_tob
-9. ICL_zh_female_xingganyujie_tob
-10. ICL_zh_male_aiqilingren_tob
-11. ICL_zh_male_aojiaogongzi_tob
-12. ICL_zh_male_aojiaojingying_tob
-13. ICL_zh_male_aomanshaoye_tob
-14. ICL_zh_male_badaoshaoye_tob
-15. ICL_zh_male_bingjiaobailian_tob
-16. ICL_zh_male_bujiqingnian_tob
-17. ICL_zh_male_chengshuzongcai_tob
-18. ICL_zh_male_cixingnansang_tob
-19. ICL_zh_male_cujingnanyou_tob
-20. ICL_zh_male_fengfashaonian_tob
-21. ICL_zh_male_fuheigongzi_tob
-
-SC2.0版本
-
-
-1. saturn_zh_female_aojiaonvyou_tob
-2. saturn_zh_female_bingjiaojiejie_tob
-3. saturn_zh_female_chengshujiejie_tob
-4. saturn_zh_female_keainvsheng_tob
-5. saturn_zh_female_nuanxinxuejie_tob
-6. saturn_zh_female_tiexinnvyou_tob
-7. saturn_zh_female_wenrouwenya_tob
-8. saturn_zh_female_wumeiyujie_tob
-9. saturn_zh_female_xingganyujie_tob
-10. saturn_zh_male_aiqilingren_tob
-11. saturn_zh_male_aojiaogongzi_tob
-12. saturn_zh_male_aojiaojingying_tob
-13. saturn_zh_male_aomanshaoye_tob
-14. saturn_zh_male_badaoshaoye_tob
-15. saturn_zh_male_bingjiaobailian_tob
-16. saturn_zh_male_bujiqingnian_tob
-17. saturn_zh_male_chengshuzongcai_tob
-18. saturn_zh_male_cixingnansang_tob
-19. saturn_zh_male_cujingnanyou_tob
-20. saturn_zh_male_fengfashaonian_tob
-21. saturn_zh_male_fuheigongzi_tob
+	[SC-2.0版本音色列表可点击此处查看](https://www.volcengine.com/docs/6561/1257544?lang=zh#%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%AE%9E%E6%97%B6%E8%AF%AD%E9%9F%B3%E5%A4%A7%E6%A8%A1%E5%9E%8B-s2s-o%E7%89%88%E6%9C%AC%E5%92%8Csc-2-0%E7%89%88%E6%9C%AC-%E9%9F%B3%E8%89%B2%E5%88%97%E8%A1%A8)
 
 
 
@@ -157,12 +113,12 @@ SC2.0版本
    1. 购买入口
       1. SC版本在豆包端到端实时语音大模型商品里面
 
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/07abb944ee504f0e9b920976715d4cd8~tplv-goo7wpa0wc-image.image" width="2788px" /></div>
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/c7689678cd6440dd87af29668de30ae4~tplv-goo7wpa0wc-image.image" width="2788px" /></div>
 
 
       2. SC2.0版本在豆包声音复刻模型2.0商品里面，在这里购买的音色能同时用于tts和实时语音
 
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/9e48a5772ffe429abe72b2ca2bc7e2f7~tplv-goo7wpa0wc-image.image" width="2784px" /></div>
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/5e128741d59e435ca315bd362870d5a1~tplv-goo7wpa0wc-image.image" width="2784px" /></div>
 
 
       3. 需要注意的是：购买克隆音色之后目前是分钟级生效，即2分钟之后才可以发起音色注册请求
@@ -194,7 +150,7 @@ curl -L -X POST 'https://openspeech.bytedance.com/api/v1/mega_tts/audio/upload' 
 ```
 
 
-8. 限流条件分为QPM和TPM，QPM全称query per minute，这里的query对应StartSession事件，即在一个AppID下面每分钟的StartSession事件不能超过配额值（默认60QPM）。TPM全称tokens per minute，即一分钟所消耗的全部token不能超过对应的配额值（默认10000TPM）。
+8. 限流条件分为QPM和TPM，QPM全称query per minute，这里的query对应StartSession事件，即在一个AppID下面每分钟的StartSession事件不能超过配额值（默认60QPM）。TPM全称tokens per minute，即一分钟所消耗的全部token不能超过对应的配额值（默认10wTPM）。
 
 
 ## 1.2 最佳实践
@@ -266,8 +222,7 @@ curl -L -X POST 'https://openspeech.bytedance.com/api/v1/mega_tts/audio/upload' 
 
 2. 在客户端发送 FinishSession 事件后，系统将不再返回任何事件。但客户端仍可复用与火山语音网关之间的 WebSocket 连接。若需发起新的会话，客户端需重新从 StartSession 事件开始。
 
-
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/e4fc0dd7abf448629027d7ad59749029~tplv-goo7wpa0wc-image.image =1952x)
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/62445c1d35494378bc96c4ba90a79bb9~tplv-goo7wpa0wc-image.image" width="500px" /></div>
 
 
 3. 在没有对话需求时候，可以发送FinishSession事件结束会话。如果不想复用websocket连接，可以继续发送FinishConnection事件，释放对应的websocket连接。
@@ -391,7 +346,7 @@ Optional可选字段code、sequence、event取决于Message type specific flags�
 | | | |* 0b0010：最后一个无序号的数据包 |\
 | | | |* 0b0011：最后一个序号小于 0 的数据包，一般用-1表示 |
 | | | | | \
-|event |4 |【必须】描述连接过程中状态管理的预定义事件，详细参考服务端的事件ID |* 0b0100：携带事件ID |\
+|event |4 |【必须】描述连接过程中状态管理的预定义事件，详细参考[实时对话事件](https://bytedance.larkoffice.com/docx/JwKydEGDkojKxHxOrzNcYeewnyd#share-NceddeBUkot54QxBOemcYsKknFe)中的事件ID |* 0b0100：携带事件ID |\
 | | | | |\
 | | | | |
 | | | | | \
@@ -448,12 +403,8 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | |StartSession |\
 | | |Session类事件 |\
 | | | |\
-| | | |Websocket 阶段声明创建会话，其中： |\
+| | | |asr字段用于描述识别阶段的相关配置： |\
 | | | | |\
-| | | |* explicit_dialect指定方言参数，**当前仅在 2.0 模型 vv 音色生效**，支持取值：`dongbei`、`sichuan`、`shaanxi`。 |\
-| | | |* aigc_metadata字段用于AIGC 内容溯源与版权元信息，配合隐式水印使用，当前仅支持2.0版本模型 |\
-| | | |* speech_rate字段用于控制输出语音播放的语速快慢，数值越大语速越快，数值越小语速越慢，取值范围[-50,100]，默认为0，当前仅支持2.0版本模型 |\
-| | | |* loudness_rate字段用于控制输出语音音量，取值范围[-50,100]，默认为0，当前仅支持2.0版本模型 |\
 | | | |* end_smooth_window_ms字段用于客户调整判断用户停止说话的时间，默认1500ms，取值范围[500ms, 50s] |\
 | | | |* enable_custom_vad字段用于标识是否开启自定义判断用户说话停止的参数，true代表开启，默认为false |\
 | | | |* enable_asr_twopass字段用于标识是否开启非流式模型识别能力，true代表开启，默认为false |\
@@ -464,8 +415,30 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | | |* context.hotwords：数组格式自定义热词 `[{"word":"xxx"}]`，非流式模型识别能力开启时生效 |\
 | | | |* context.correct_words：map 格式文本替换规则 `{"正则原文本":"替换后"}`，传值即生效 |\
 | | | | |\
-| | | |> 补充：词表配置与 context 内配置同时传值时自动 merge 合并，所有规则叠加生效 |\
-| | | | |\
+| | | |> 补充：词表配置与 context 内配置同时传值时自动 merge 合并，所有规则叠加生效 |```JSON |\
+| | | | |{ |\
+| | | | |    "asr": { |\
+| | | | |        "extra": { |\
+| | | | |            "end_smooth_window_ms": {{INT}}, |\
+| | | | |            "enable_custom_vad": {{BOOLEAN}}, |\
+| | | | |            "enable_asr_twopass": {{BOOLEAN}}, |\
+| | | | |            "boosting_table_id": {{STRING}},  |\
+| | | | |            "boosting_table_name": {{STRING}}, |\
+| | | | |            "regex_correct_table_id": {{STRING}},  |\
+| | | | |            "regex_correct_table_name": {{STRING}},  |\
+| | | | |            "context": { |\
+| | | | |                "hotwords": [ |\
+| | | | |                    {"word": {{STRING}}} |\
+| | | | |                ], |\
+| | | | |                "correct_words": map[string]string{} |\
+| | | | |            } |\
+| | | | |        } |\
+| | | | |    } |\
+| | | | |} |\
+| | | | |``` |\
+| | | | | |
+|^^|^^|^^| | | \
+| | | |dialog字段用于描述对话相关配置： |\
 | | | | |\
 | | | |* bot_name字段用于修改基础人设信息，例如人名、来源等，默认为豆包，只针对**O版本**生效 |\
 | | | |* system_role字段用于配置背景人设信息，描述角色的来源、设定等，例如“你是大灰狼、用户是小红帽，用户逃跑时你会威胁吃掉他。”，只针对**O版本**生效 |\
@@ -497,39 +470,6 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | | |   * **1.2.1.1**对应O2.0版本（规范版本号） |\
 | | | |   * **2.2.0.0**对应SC2.0版本（规范版本号） |```JSON |\
 | | | | |{ |\
-| | | | |    "tts": { |\
-| | | | |        "extra": { |\
-| | | | |            "explicit_dialect": {{STRING}}, |\
-| | | | |            "aigc_metadata": { |\
-| | | | |                "enable": {{BOOL}}, // 是否启用隐式水印 |\
-| | | | |                "content_producer": {{STRING}}, // 合成服务提供者的名称或编码 |\
-| | | | |                "produce_id" : {{STRING}}, // 内容制作编号 |\
-| | | | |                "content_propagator": {{STRING}}, // 内容传播服务提供者的名称或编码 |\
-| | | | |                "propagate_id": {{STRING}} // 内容传播编号   |\
-| | | | |            } |\
-| | | | |        }, |\
-| | | | |        "audio_config": { |\
-| | | | |            "speech_rate": {{INT}}, |\
-| | | | |            "loudness_rate": {{INT}} |\
-| | | | |        } |\
-| | | | |    }, |\
-| | | | |    "asr": { |\
-| | | | |        "extra": { |\
-| | | | |            "end_smooth_window_ms": {{INT}}, |\
-| | | | |            "enable_custom_vad": {{BOOLEAN}}, |\
-| | | | |            "enable_asr_twopass": {{BOOLEAN}}, |\
-| | | | |            "boosting_table_id": {{STRING}},  |\
-| | | | |            "boosting_table_name": {{STRING}}, |\
-| | | | |            "regex_correct_table_id": {{STRING}},  |\
-| | | | |            "regex_correct_table_name": {{STRING}},  |\
-| | | | |            "context": { |\
-| | | | |                "hotwords": [ |\
-| | | | |                    {"word": {{STRING}}} |\
-| | | | |                ], |\
-| | | | |                "correct_words": map[string]string{} |\
-| | | | |            } |\
-| | | | |        } |\
-| | | | |    }, |\
 | | | | |    "dialog": { |\
 | | | | |        "bot_name": {{STRING}}, |\
 | | | | |        "system_role": {{STRING}}, |\
@@ -574,6 +514,38 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | | | |``` |\
 | | | | | |\
 | | | | | |
+|^^|^^|^^| | | \
+| | | |tts字段用于描述合成音频相关配置： |\
+| | | | |\
+| | | |* explicit_dialect指定方言参数，**当前仅在 2.0 模型 vv 音色生效**，支持取值：`dongbei`、`sichuan`、`shaanxi`。 |\
+| | | |* aigc_metadata字段用于AIGC 内容溯源与版权元信息，配合隐式水印使用，当前仅支持2.0版本模型 |\
+| | | |* speech_rate字段用于控制输出语音播放的语速快慢，数值越大语速越快，数值越小语速越慢，取值范围[-50,100]，默认为0，当前仅支持2.0版本模型 |\
+| | | |* loudness_rate字段用于控制输出语音音量，取值范围[-50,100]，默认为0，当前仅支持2.0版本模型 |\
+| | | |* tts_2.0_model字段用于传递复刻音色效果，高表现力版本复刻音色固定传 `expressive`，当前仅支持O2.0版本模型 |\
+| | | | |\
+| | | | |\
+| | | | |```JSON |\
+| | | | |{ |\
+| | | | |    "tts": { |\
+| | | | |        "extra": { |\
+| | | | |            "explicit_dialect": {{STRING}}, |\
+| | | | |            "aigc_metadata": { |\
+| | | | |                "enable": {{BOOL}}, // 是否启用隐式水印 |\
+| | | | |                "content_producer": {{STRING}}, // 合成服务提供者的名称或编码 |\
+| | | | |                "produce_id" : {{STRING}}, // 内容制作编号 |\
+| | | | |                "content_propagator": {{STRING}}, // 内容传播服务提供者的名称或编码 |\
+| | | | |                "propagate_id": {{STRING}} // 内容传播编号   |\
+| | | | |            }， |\
+| | | | |            "tts_2.0_model": {{STRING}} |\
+| | | | |        }, |\
+| | | | |        "audio_config": { |\
+| | | | |            "speech_rate": {{INT}}, |\
+| | | | |            "loudness_rate": {{INT}} |\
+| | | | |        } |\
+| | | | |    } |\
+| | | | |} |\
+| | | | |``` |\
+| | | | | |
 | | |^^| | | \
 |102 |FinishSession |\
 | | | |客户端声明结束会话，后面可以复用websocket连接 |\
@@ -586,10 +558,15 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | |^^| | | \
 |201 |UpdateConfig |\
 | | | |客户端更新通话过程中的SP相关配置，其中dialog_id字段代表上下文唯一标识 |\
+| | | |**注意**：右侧涉及配置字段均采用全量覆盖模式，请确保请求中包含完整字段信息 |\
 | | | | |```JSON |\
 | | | | |{ |\
 | | | | |    "tts": { |\
-| | | | |        "speaker": {{STRING}} |\
+| | | | |        "speaker": {{STRING}}, |\
+| | | | |        "audio_config": { |\
+| | | | |            "speech_rate": {{INT}}, |\
+| | | | |            "loudness_rate": {{INT}} |\
+| | | | |        } |\
 | | | | |    }, |\
 | | | | |    "dialog": { |\
 | | | | |        "bot_name": {{STRING}}, |\
@@ -759,7 +736,7 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 .custom-md-table th:nth-of-type(3){min-width:100px;}
 .custom-md-table th:nth-of-type(4){min-width:400px;}
 .custom-md-table th:nth-of-type(5){min-width:100px;}
-</style>
+ </style>
 备注：
 
 * Websocket阶段：在 HTTP 建立连接之后Upgrade
@@ -1023,7 +1000,6 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | | | |    "message": "the following item ids are missing: 1,2,3" |\
 | | | | |} |\
 | | | | |``` |\
-| | | | | |\
 | | | | | |
 | | |^^| | | \
 |569 |ConversationRetrieved | |查询上下文请求对应的ack |\
@@ -1089,13 +1065,16 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 # 3 快速开始
 
 ## Python示例
-<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/dc64d18a966643f4a8817215ca5d77a3~tplv-goo7wpa0wc-image.image" name="realtime_dialog.zip" ></Attachment>
+<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/24c5221cb7b64875b0e5b317598fab92~tplv-goo7wpa0wc-image.image" name="realtime_dialog.zip" ></Attachment>
+
 
 ## Go示例
-<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/fcf161faa9774f1a84c2fc8d1610e67a~tplv-goo7wpa0wc-image.image" name="realtime_dialog.zip" ></Attachment>
+<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/a18bd14b9e22455eb7a21d34c842de02~tplv-goo7wpa0wc-image.image" name="realtime_dialog.zip" ></Attachment>
+
 
 ## Java示例
-<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/81a98584418c4e668fcf161bc3b445ec~tplv-goo7wpa0wc-image.image" name="realtime_dialog.zip" ></Attachment>
+<Attachment link="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/2cbd3ab7c62b45f884ef5f3c71849c04~tplv-goo7wpa0wc-image.image" name="realtime_dialog.zip" ></Attachment>
+
 
 您可以通过以下步骤，快速体验与 Realtime 模型API实时对话的功能。
 
@@ -1138,28 +1117,32 @@ RealtimeAPI的交互流程目前只支持server_vad模式，该模式的交互�
 4. 服务端合成的音频通过TTSResponse事件将音频返回给客户端
 
 
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/b91ced14789e490781bfdd05f0df39a5~tplv-goo7wpa0wc-image.image =1724x)
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/3722b9de766a484cb236ced79fa44eb7~tplv-goo7wpa0wc-image.image" width="400px" /></div>
+
 
 
 ## 4.1 文本输入
 
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/20155fadd26341cf9a19025c3a387215~tplv-goo7wpa0wc-image.image =1564x)
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/f6f879039f39402a8d3ecf505bec2b46~tplv-goo7wpa0wc-image.image" width="400px" /></div>
+
 
 
 ## 4.2 合成音频
 当客户判定不使用模型生成闲聊内容时，系统允许客户多次上传文本执行音频合成，以满足多样化需求。整体交互示例如下所示：
 
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/4406efeaa706406f920862750b0edcf5~tplv-goo7wpa0wc-image.image =1565x)
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/389354b7d57d4f7793e41182397fa7eb~tplv-goo7wpa0wc-image.image" width="400px" /></div>
+
 
 
 ## 4.3 外部RAG输入
 
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/a82536674575496094bf908f2ed940cc~tplv-goo7wpa0wc-image.image =1565x)
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/d57dfa283e774048b2d643d709f59d9d~tplv-goo7wpa0wc-image.image" width="400px" /></div>
+
 
 
 ## 4.4 联网Agent搜索源
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/42566f09cea94500850a5eb4a1f8f2cf~tplv-goo7wpa0wc-image.image" width="400px" /></div>
 
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/d4ed6e926a3c4fe88165dc2d36acb26f~tplv-goo7wpa0wc-image.image =1565x)
 
 
 # 5 错误码
@@ -1218,6 +1201,8 @@ RealtimeAPI的交互流程目前只支持server_vad模式，该模式的交互�
 | | | \
 |日期 |update |
 |---|---|
+| | | \
+|26.04.29 |文档整体优化 |
 | | | \
 |26.03.07 |O2.0 小版本迭代升级；O2.0版本支持复刻音色；支持用户query退出机制，便于用户表达退出意图时候能够让客户端作出对应动作； |
 | | | \

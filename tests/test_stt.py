@@ -81,6 +81,7 @@ class TestVolcengineAsrRequestV3Serialization:
         'show_speech_rate': False,
         'show_volume': False,
         'enable_lid': False,
+        'enable_auto_lang': False,
         'enable_emotion_detection': False,
         'enable_gender_detection': False,
         'result_type': STTResultType.full,
@@ -148,6 +149,7 @@ class TestVolcengineAsrRequestV3Serialization:
         'show_speech_rate': False,
         'show_volume': False,
         'enable_lid': False,
+        'enable_auto_lang': False,
         'enable_emotion_detection': False,
         'enable_gender_detection': False,
         'result_type': STTResultType.full,
@@ -209,6 +211,7 @@ class TestVolcengineAsrRequestV3Serialization:
         'show_speech_rate': False,
         'show_volume': False,
         'enable_lid': False,
+        'enable_auto_lang': False,
         'enable_emotion_detection': False,
         'enable_gender_detection': False,
         'result_type': STTResultType.full,
@@ -280,6 +283,7 @@ class TestVolcengineAsrRequestV3Serialization:
         'show_speech_rate': False,
         'show_volume': False,
         'enable_lid': False,
+        'enable_auto_lang': False,
         'enable_emotion_detection': False,
         'enable_gender_detection': False,
         'result_type': STTResultType.full,
@@ -314,6 +318,13 @@ class TestVolcengineAsrRequestV3Serialization:
 
     assert dumped['enable_nonstream'] is True
     assert 'enable_nostream' not in dumped
+
+  def test_enable_auto_lang_serializes_latest_doc_field(self):
+    """Latest non-streaming STT auto language flag should serialize."""
+    request = VolcengineAsrRequestV3.Request(enable_auto_lang=True)
+    dumped = request.model_dump()
+
+    assert dumped['enable_auto_lang'] is True
 
 
 def test_shared_protocol_helpers_generate_real_headers_and_sequences():

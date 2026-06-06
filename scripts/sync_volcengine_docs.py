@@ -1,4 +1,4 @@
-"""Capture cleaned Volcengine doc content snapshots for SDK sync reviews."""
+"""Fetch cleaned Volcengine doc content snapshots for SDK sync reviews."""
 
 from __future__ import annotations
 
@@ -8,8 +8,8 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-
-from playwright.sync_api import Page, sync_playwright
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 
 @dataclass(frozen=True)
@@ -47,11 +47,17 @@ DOCS = [
     document_id='1354869',
     source_url='https://www.volcengine.com/docs/6561/1354869?lang=zh',
   ),
+  DocSource(
+    name='tts_voice_list',
+    document_id='1257544',
+    source_url='https://www.volcengine.com/docs/6561/1257544?lang=zh',
+  ),
 ]
 
 
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = PACKAGE_ROOT / 'doc_sync' / 'volcengine'
+API_URL = 'https://www.volcengine.com/api/doc/getDocDetail'
 
 
 def _sha256(text: str) -> str:
@@ -62,7 +68,15 @@ def _clean_content(content: str) -> str:
   """Return the tracked docs text with noisy span tags removed."""
 
   cleaned = re.sub(r'</?span\b[^>]*>', '', content)
-  return cleaned.strip()
+  return '\n'.join(line.rstrip() for line in cleaned.strip().splitlines())
+
+
+def _linked_volcengine_doc_ids(content: str) -> list[str]:
+  """Return linked Volcengine docs IDs mentioned by a snapshot."""
+
+  return sorted(
+    set(re.findall(r'https://www\.volcengine\.com/docs/6561/(\d+)', content))
+  )
 
 
 def _clear_output_dir() -> None:
@@ -76,73 +90,89 @@ def _clear_output_dir() -> None:
       path.unlink()
 
 
-def capture_doc(page: Page, doc: DocSource) -> tuple[str, dict]:
-  """Capture the backing getDocDetail response for a rendered docs page."""
+def _doc_api_url(doc: DocSource) -> str:
+  """Return the public getDocDetail API URL for a docs page."""
 
-  def is_target_response(response) -> bool:
-    url = response.url
-    return (
-      '/api/doc/getDocDetail?' in url and f'DocumentID={doc.document_id}' in url
-    )
+  query = urlencode(
+    {
+      'LibraryID': '6561',
+      'DocumentID': doc.document_id,
+      'AuditDocumentID': '',
+      'type': 'online',
+    }
+  )
+  return f'{API_URL}?{query}'
 
-  with page.expect_response(is_target_response) as response_info:
-    page.goto(doc.source_url, wait_until='networkidle')
-    page.wait_for_timeout(1000)
 
-  response = response_info.value
-  if response.status != 200:
-    raise RuntimeError(
-      f'Unexpected status {response.status} for {doc.document_id}'
-    )
+def fetch_doc(doc: DocSource) -> tuple[str, dict]:
+  """Fetch the backing getDocDetail payload directly."""
 
-  payload = json.loads(response.text())
-  return response.url, payload
+  api_url = _doc_api_url(doc)
+  request = Request(
+    api_url,
+    headers={
+      'Accept': 'application/json',
+      'Referer': doc.source_url,
+      'User-Agent': (
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36'
+      ),
+    },
+  )
+  with urlopen(request, timeout=30) as response:
+    status = response.status
+    if status != 200:
+      raise RuntimeError(f'Unexpected status {status} for {doc.document_id}')
+    payload = json.loads(response.read().decode())
+
+  if not payload.get('Result'):
+    raise RuntimeError(f'Missing Result in response for {doc.document_id}')
+
+  return api_url, payload
 
 
 def main() -> None:
   """Write cleaned content snapshots and a manifest for future diffs."""
 
   OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-  _clear_output_dir()
   manifest = {
     'synced_at': datetime.now(UTC).isoformat(),
-    'command': (
-      'uvx --with playwright python '
-      'packages/volcengine-audio/scripts/sync_volcengine_docs.py'
-    ),
+    'command': 'python scripts/sync_volcengine_docs.py',
     'docs': [],
+    'untracked_linked_document_ids': [],
   }
 
-  with sync_playwright() as playwright:
-    browser = playwright.chromium.launch(headless=True)
-    try:
-      for doc in DOCS:
-        page = browser.new_page()
-        try:
-          api_url, payload = capture_doc(page, doc)
-        finally:
-          page.close()
+  fetched = [(doc, *fetch_doc(doc)) for doc in DOCS]
+  tracked_doc_ids = {doc.document_id for doc, _, _ in fetched}
+  linked_doc_ids: set[str] = set()
+  _clear_output_dir()
 
-        result = payload.get('Result') or {}
-        content = _clean_content(result.get('Content', ''))
-        file_name = f'{doc.document_id}-{doc.name}.md'
-        file_path = OUTPUT_DIR / file_name
-        file_path.write_text(f'{content}\n')
+  for doc, api_url, payload in fetched:
+    result = payload.get('Result') or {}
+    content = _clean_content(result.get('Content', ''))
+    doc_linked_ids = _linked_volcengine_doc_ids(content)
+    linked_doc_ids.update(doc_linked_ids)
+    file_name = f'{doc.document_id}-{doc.name}.md'
+    file_path = OUTPUT_DIR / file_name
+    file_path.write_text(f'{content}\n')
 
-        manifest['docs'].append(
-          {
-            'name': doc.name,
-            'document_id': doc.document_id,
-            'title': result.get('Title'),
-            'updated_time': result.get('UpdatedTime'),
-            'source_url': doc.source_url,
-            'api_url': api_url,
-            'file': str(file_path.relative_to(PACKAGE_ROOT)),
-            'content_sha256': _sha256(content),
-          }
-        )
-    finally:
-      browser.close()
+    manifest['docs'].append(
+      {
+        'name': doc.name,
+        'document_id': doc.document_id,
+        'title': result.get('Title'),
+        'updated_time': result.get('UpdatedTime'),
+        'source_url': doc.source_url,
+        'api_url': api_url,
+        'file': str(file_path.relative_to(PACKAGE_ROOT)),
+        'content_sha256': _sha256(content),
+        'linked_document_ids': doc_linked_ids,
+      }
+    )
+
+  manifest['untracked_linked_document_ids'] = sorted(
+    linked_doc_ids - tracked_doc_ids
+  )
 
   manifest_path = OUTPUT_DIR / 'manifest.json'
   manifest_text = json.dumps(manifest, ensure_ascii=False, indent=2)

@@ -39,7 +39,23 @@ python scripts/sync_volcengine_docs.py
    values, event IDs, resource/model names, auth headers, and response payload
    shapes.
 
-4. Update SDK code only when the snapshot diff proves API drift:
+4. Review linked docs in `manifest.json`:
+
+- Check each entry's `linked_document_ids` and the top-level
+  `untracked_linked_document_ids`.
+- Add a linked Volcengine doc to `scripts/sync_volcengine_docs.py` when the
+  target page carries SDK-relevant enum values, field descriptions,
+  resource/model compatibility, event IDs, response payload shapes, or
+  speaker/language support tables.
+- Keep credential FAQ, console-operation, setup-only, and marketing links out
+  of `DOCS` unless their content becomes part of SDK request/response behavior.
+- If a tracked doc stops being linked or becomes obsolete, verify whether it is
+  still a source of SDK behavior before removing it from `DOCS`.
+- For non-Volcengine links that move SDK-critical information, record the link
+  in the review notes and decide whether a separate fetch mechanism is needed;
+  do not silently ignore it.
+
+5. Update SDK code only when the snapshot diff proves API drift:
 
 - `stt.py`: request fields, language/audio enums, STT response payloads,
   context data, old/new console auth guidance, and STT error event codes.
@@ -51,10 +67,10 @@ python scripts/sync_volcengine_docs.py
   and framing helpers.
 - `__init__.py`: public exports for any new public schema or helper.
 
-5. Update package tests for every behavior change. Prefer exact payload
+6. Update package tests for every behavior change. Prefer exact payload
    assertions over partial checks.
 
-6. Update README files only with user-facing facts: install/development usage,
+7. Update README files only with user-facing facts: install/development usage,
    public examples, API reference, package version, and the local sync date or
    source timestamps when they are meant to be public. Keep procedural sync
    checklists in this skill, not in README files.
@@ -67,6 +83,9 @@ python scripts/sync_volcengine_docs.py
 - Strip `<span ...>` and `</span>` tags before writing snapshots.
 - Keep source metadata such as `updated_time`, `source_url`, `api_url`, and
   content hashes in `manifest.json`.
+- Keep `linked_document_ids` and `untracked_linked_document_ids` in
+  `manifest.json` so new, obsolete, or newly important links are visible in
+  future diffs.
 - Snapshot files are tracked for future diffs, but they are not included in the
   wheel because the build packages only `src/volcengine_audio`.
 

@@ -175,14 +175,12 @@ headers = {
 |req_params.text |输入文本 | |string | |
 | | | | | | \
 |req_params.model |\
-| |模型版本，传`seed-tts-1.1`较默认版本音质有提升，并且延时更优，不传为默认效果。 |\
-| |注：若使用1.1模型效果，在复刻场景中会放大训练音频prompt特质，因此对prompt的要求更高，使用高质量的训练音频，可以获得更优的音质效果。 |\
+| |以下参数仅针对声音复刻2.0生效。取值有以下两种： |\
 | | |\
-| |以下参数仅针对声音复刻2.0的音色生效，即音色ID的前缀为`saturn_`的音色。音色的取值为以下两种： |\
+| |* `seed-tts-2.0-standard`：标准版，延时更优，不支持语音指令QA和语音标签Cot能力。如果传入QA或Cot参数，接口会过滤掉。 |\
+| |* `seed-tts-2.0-expressive`：表现力增强版本，表现力较强，支持语音指令QA和语音标签Cot能力，存在效果抽卡的情况。 |\
 | | |\
-| |* `seed-tts-2.0-expressive`：表现力较强，支持QA和Cot能力，不过可能存在抽卡的情况。 |\
-| |* `seed-tts-2.0-standard`：表现力上更加稳定，但是不支持QA和Cot能力。如果此时使用QA或Cot能力，则拒绝请求。 |\
-| |* 如果不传model参数，默认使用`seed-tts-2.0-expressive`模型。 | |string |\
+| |如果不传model参数，默认使用`seed-tts-2.0-standard`模型。 | |string |\
 | | | | | |
 | | | | | | \
 |req_params.ssml |* 当文本格式是ssml时，需要将文本赋值为ssml，此时文本处理的优先级高于text。ssml和text字段，至少有一个不为空 |\
@@ -314,13 +312,25 @@ headers = {
 | |* 不给定参数，正常中英混 |\
 | | |\
 | |**声音复刻 ICL2.0场景：** |\
-| |当音色是使用model_type=4训练的 |\
+| |**使用非中英文语种时，必须指定明确语种，并且合成文本也必须是指定语种的文本，原始复刻的prompt 也必须是对应的语种，暂时不支持跨语种合成；** |\
+| |当音色是使用model_type=4 训练的 |\
 | | |\
 | |* 不给定参数，正常中英混 |\
 | |* `zh-cn` 中文为主，支持中英混  |\
 | |* `en` 仅英文 |\
 | | |\
-| |GoLang示例：`additions = fmt.Sprintf("{"explicit_language": "zh"}")` | |string | |
+| |当音色是使用model_type=5 训练的 |\
+| | |\
+| |* 不给定参数，正常中英混 |\
+| |* `zh-cn` 中文为主，支持中英混  |\
+| |* `en` 仅英文 |\
+| |* `ja` 仅日文 |\
+| |* `es-mx` 仅墨西 |\
+| |* `id` 仅印尼 |\
+| |* `pt-br` 仅巴葡 |\
+| |* `ko` 韩语 |\
+| | |\
+| |GoLang示例：`additions = fmt.Sprintf("{\"explicit_language\": \"ja\"}")` | |string | |
 | | | | | | \
 |req_params.additions.context_language（参考语种） |给模型提供参考的语种 |\
 | | |\
@@ -376,7 +386,7 @@ headers = {
 |req_params.additions.post_process.pitch |音调取值范围是[-12,12] | |int |0 |
 | | | | | | \
 |req_params.additions.context_texts |\
-|([仅TTS2.0支持](https://www.volcengine.com/docs/6561/1257544)) |语音合成的辅助信息，用于模型对话式合成，能更好的体现语音情感； |\
+|([仅TTS2.0支持](https://www.volcengine.com/docs/6561/1257544)) |语音指令，语音合成的辅助信息，用于模型对话式合成，能更好的体现语音情感； |\
 | |可以探索，比如常见示例有以下几种： |\
 | | |\
 | |1. 语速调整 |\
@@ -391,14 +401,23 @@ headers = {
 | | |\
 | |注意： |\
 | | |\
-| |1. 该字段仅适用于["豆包语音合成模型2.0"的音色](https://www.volcengine.com/docs/6561/1257544) |\
+| |1. 该字段仅适用于["豆包语音合成模型2.0"的音色](https://www.volcengine.com/docs/6561/1257544)，“豆包声音复刻大模型 2.0”的表现力增强版本。 |\
 | |2. 当前字符串列表只第一个值有效 |\
 | |3. 该字段文本不参与计费 | |string list |null |
 | | | | | | \
-|req_params.additions.use_tag_parser |是否开启cot解析能力。cot能力可以辅助当前语音合成，对语速、情感等进行调整。 |\
+|req_params.additions.section_id |\
+|([仅TTS2.0支持](https://www.volcengine.com/docs/6561/1257544)) |多轮会话 ID 用于关联同一上下文中的多次串行语音合成请求。服务端通过该 ID 在一次语音合成结束后保存对话历史，并在后续语音合成请求中，使用相同的 ID 读取对应的历史记录。 |\
+| |取值示例：如在一通电话中的多次 TTS 请求，建议为该通电话使用 UUID 生成一个唯一的 section_id，并在所有 TTS 请求中传递相同的 section_id。 |\
+| |示例：`section_id="bf5b5771-31cd-4f7a-b30c-f4ddcbf2f9da"` |\
 | |注意： |\
 | | |\
-| |1. 音色支持范围：仅限声音复刻2.0复刻的音色 |\
+| |1. 该字段仅适用于["豆包语音合成模型2.0"的音色](https://www.volcengine.com/docs/6561/1257544)，“豆包声音复刻大模型 2.0”的音色。 |\
+| |2. 服务端对历史上下文有相应的轮数限制和超时时间。 | | | |
+| | | | | | \
+|req_params.additions.use_tag_parser |是否开启语音标签cot解析能力。cot能力可以辅助当前语音合成，对语速、情感等进行调整。 |\
+| |注意： |\
+| | |\
+| |1. 该字段仅适用于“豆包声音复刻大模型 2.0”的表现力增强版本。 |\
 | |2. 文本长度：单句的text字符长度最好小于64（cot标签也计算在内） |\
 | |3. cot能力生效的范围是单句 |\
 | | |\
@@ -420,7 +439,7 @@ headers = {
 |req_params.mix_speaker.speakers[i].source_speaker |混音源音色名 |\
 | |注意： |\
 | | |\
-| |1. 支持["豆包语音合成模型1.0"的音色](https://www.volcengine.com/docs/6561/1257544)、["语音合成（小模型）"的音色](https://www.volcengine.com/docs/6561/97465?lang=zh)、声音复刻大模型的音色 |\
+| |1. 支持["豆包语音合成模型1.0"的音色](https://www.volcengine.com/docs/6561/1257544)、声音复刻大模型的音色 |\
 | |2. 使用声音复刻大模型音色时，使用`S_`开头的`speakerid`，或者使用查询接口获取的`icl_`的`speakerid`，不支持`DiT_`或者 `saturn_`开头的`speakerid` | |string |"" |
 | | | | | | \
 |req_params.mix_speaker.speakers[i].mix_factor |混音源音色名影响因子 |\

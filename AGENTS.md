@@ -14,10 +14,9 @@ services. It provides typed schemas and request/response helpers for:
 - Shared websocket/binary protocol helpers
 
 Keep this guide in sync with `README.md`. The README is the user-facing
-package guide and records the local SDK/doc sync date, tracked upstream
-timestamps, and the latest upstream review summary; this file should carry the
-agent-facing workflow and code-boundary details that make those README claims
-actionable.
+package guide and records the local SDK/doc sync date and tracked upstream
+timestamps; this file carries the agent-facing workflow and code-boundary
+details that make those README claims actionable.
 
 Core maintenance entrypoints:
 
@@ -55,6 +54,7 @@ first stop during maintenance:
 - `doc_sync/volcengine/1719100-tts_websocket_unidirectional_v3.md`
 - `doc_sync/volcengine/1598757-tts_http_chunked_sse_v3.md`
 - `doc_sync/volcengine/1354869-stt_streaming_bigmodel.md`
+- `doc_sync/volcengine/1257544-tts_voice_list.md`
 
 These files are tracked in git so future syncs can diff upstream changes
 quickly. They are repo-only maintenance artifacts and are not packed into
@@ -62,24 +62,30 @@ wheels because the wheel build only includes `src/volcengine_audio`.
 
 Current tracked upstream timestamps from `manifest.json` and `README.md`:
 
-- Realtime dialogue: `2026-04-29T07:34:45Z`
-- TTS WebSocket bidirectional V3: `2026-04-24T03:45:24Z`
-- TTS WebSocket unidirectional V3: `2026-04-24T03:44:56Z`
-- TTS HTTP Chunked/SSE V3: `2026-04-24T03:44:50Z`
-- STT streaming bigmodel: `2026-04-27T03:14:54Z`
+- Realtime dialogue: `2026-06-04T10:15:01Z`
+- TTS WebSocket bidirectional V3: `2026-05-25T08:51:30Z`
+- TTS WebSocket unidirectional V3: `2026-05-25T08:49:18Z`
+- TTS HTTP Chunked/SSE V3: `2026-05-25T09:03:36Z`
+- STT streaming bigmodel: `2026-05-29T02:49:48Z`
+- TTS voice list: `2026-05-26T05:41:00Z`
 
 Latest local sync review:
 
-- Local sync date in README: `2026-05-01`.
-- Realtime docs added concrete protocol surface that belongs in the SDK:
-  `UpdateConfig`, `EndASR`, `ConversationTruncate`, `ClientInterrupt`,
-  `ConfigUpdated`, `ConversationTruncated`, realtime `tts.extra`
-  `explicit_dialect`, and realtime `tts.extra.aigc_metadata`.
-- STT docs now separate old-console app/access-key headers from new-console
-  `X-Api-Key`, while the request schema still uses `context_data` for dialog
-  context and `EventReceive.WAITING_NEXT_PACKET_TIMEOUT` for `45000081`.
-- TTS docs only changed the `seed-tts-1.0-concurr` billing wording in this
-  refresh; the existing resource/model schema remains valid.
+- Local sync date in README: `2026-06-06`.
+- Realtime docs added 12K 2.0 context notes, O/SC convergence wording,
+  updated SC2.0 voice-list references, `tts.extra.tts_2.0_model`, and a
+  10w TPM default. The SDK exposes this as `tts_2_0_model` with the wire alias
+  `tts_2.0_model`.
+- STT docs added non-streaming `enable_auto_lang` for automatic language
+  detection across 25 locales. The SDK request schema includes
+  `enable_auto_lang`.
+- TTS docs now describe the TTS 2.0 default model as
+  `seed-tts-2.0-standard`, expand ICL2.0 explicit-language guidance, and
+  clarify `context_texts`, `section_id`, and `use_tag_parser`. The existing SDK
+  fields cover those parameters.
+- TTS voice-list doc `1257544` is now tracked because the API docs delegate
+  speaker, model/resource compatibility, voice ability, and language support
+  details to that page. The SDK still keeps speaker fields open as `str`.
 
 Snapshot format guidance:
 
@@ -89,6 +95,12 @@ Snapshot format guidance:
   diffs stay readable.
 - Keep metadata such as `updated_time`, `source_url`, `api_url`, and the
   content hash in `manifest.json`.
+- Review `linked_document_ids` and `untracked_linked_document_ids` in
+  `manifest.json` after each sync. Add linked Volcengine docs to
+  `scripts/sync_volcengine_docs.py` when they carry SDK-relevant enum values,
+  field descriptions, resource/model compatibility, event IDs, or response
+  shapes. Do not add credential FAQ, console operation, or setup-only links
+  unless their content becomes part of SDK behavior.
 
 ## 4) Quality and Static Checks
 
@@ -134,7 +146,7 @@ Testing expectations:
 - `src/volcengine_audio/__init__.py`: public exports
 - `tests/`: package-level regression coverage
 - `doc_sync/volcengine/`: tracked upstream snapshots and manifest
-- `scripts/sync_volcengine_docs.py`: Playwright-based doc sync utility
+- `scripts/sync_volcengine_docs.py`: direct API doc sync utility
 - `README.md`: English package guide and sync metadata
 - `README.zh-CN.md`: Chinese package guide and sync metadata
 
@@ -143,25 +155,24 @@ Testing expectations:
 Refresh docs with:
 
 ```bash
-uvx --with playwright python scripts/sync_volcengine_docs.py
+python scripts/sync_volcengine_docs.py
 ```
 
 What the script does:
 
-1. Opens each public Volcengine docs page with Playwright.
-2. Captures the backing `api/doc/getDocDetail` JSON response.
-3. Extracts only `Result.Content`, removes span tags, and writes a `.md`
+1. Requests each public `api/doc/getDocDetail` JSON response directly.
+2. Extracts only `Result.Content`, removes span tags, and writes a `.md`
    snapshot for each tracked doc.
-4. Writes `manifest.json` with source metadata and content hashes.
+3. Writes `manifest.json` with source metadata, content hashes, and linked
+   Volcengine doc IDs.
 
 Important notes:
 
-- The public docs pages are JS-rendered.
-- Direct CLI requests to the JSON endpoint may return unauthorized.
-- Prefer Playwright response interception over raw `curl` scraping.
+- Fetch all docs successfully before clearing old snapshots so a failed sync
+  does not leave the snapshot directory empty.
 - If the task is only to sync `AGENTS.md` or `README.md` with already-tracked
-  snapshots, do not rerun Playwright. Read `manifest.json`, the README files,
-  and `git diff -- doc_sync/volcengine` instead.
+  snapshots, do not rerun the sync script. Read `manifest.json`, the README
+  files, and `git diff -- doc_sync/volcengine` instead.
 
 ## 8) Coding Standards (Package-Specific)
 

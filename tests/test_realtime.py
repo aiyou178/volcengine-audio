@@ -96,6 +96,7 @@ def test_start_session_supports_latest_doc_fields():
     tts=RealtimeDialogueConfig.TTSConfig(
       extra=RealtimeDialogueConfig.TTSConfig.Extra(
         explicit_dialect='sichuan',
+        tts_2_0_model='expressive',
         aigc_metadata=RealtimeDialogueConfig.TTSConfig.Extra.AIGCMetadata(
           enable=True,
           content_producer='producer',
@@ -131,6 +132,7 @@ def test_start_session_supports_latest_doc_fields():
   assert meta['dialog']['extra']['volc_websearch_type'] == 'web_agent'
   assert meta['dialog']['extra']['volc_websearch_bot_id'] == 'bot-id'
   assert meta['tts']['extra']['explicit_dialect'] == 'sichuan'
+  assert meta['tts']['extra']['tts_2.0_model'] == 'expressive'
   assert meta['tts']['extra']['aigc_metadata']['produce_id'] == 'produce-id'
   assert meta['tts']['audio_config']['speech_rate'] == 10
   assert meta['tts']['audio_config']['loudness_rate'] == 5

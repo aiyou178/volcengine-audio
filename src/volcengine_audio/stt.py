@@ -204,6 +204,9 @@ class VolcengineAsrRequestV3(BaseModel):
       False,
       description='Enable language identification (bigmodel_nostream & bigmodel_async only)',
     )
+    enable_auto_lang: bool = Field(
+      False, description='Auto-detect language for non-streaming STT'
+    )
     enable_emotion_detection: bool = Field(
       False,
       description='Enable emotion detection (bigmodel_nostream & bigmodel_async only)',
