@@ -15,7 +15,7 @@ Example:
     >>> from volcengine_audio import RealtimeDialogueConfig, HOST
 """
 
-__version__ = '0.1.0'
+__version__ = '0.2.3'
 
 # Protocol exports
 from .protocol import (
