@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Guidance for coding agents working in
-`/Users/liangdeo/pyproj/dispatcher/packages/volcengine-audio`.
+Guidance for coding agents working in the `volcengine-audio` package
+repository.
 
 ## 1) What This Package Is
 
@@ -30,7 +30,7 @@ Core maintenance entrypoints:
 
 ## 2) Environment and Dependencies
 
-- Workspace runtime: Python 3.13
+- Local development runtime: Python 3.13
 - Package metadata: `requires-python = ">=3.10"`
 - Package manager: `uv`
 - Build backend: `hatchling`
@@ -39,11 +39,9 @@ Core maintenance entrypoints:
 Useful setup commands:
 
 ```bash
-# from package root
 uv sync --frozen --group dev
-
-# from repo root
-uv run pytest packages/volcengine-audio/tests
+uv run pytest tests
+uv run ruff check src tests
 ```
 
 ## 3) Source of Truth
@@ -97,15 +95,9 @@ Snapshot format guidance:
 Run what is relevant for the change:
 
 ```bash
-# from package root
 uv run ruff check src tests
 uv run ruff format src tests
 uv run pytest
-
-# from repo root
-uv run ruff check packages/volcengine-audio/src packages/volcengine-audio/tests
-uv run ruff format packages/volcengine-audio/src packages/volcengine-audio/tests
-uv run pytest packages/volcengine-audio/tests
 ```
 
 ## 5) Testing
@@ -116,13 +108,13 @@ Useful commands:
 
 ```bash
 # full package suite
-uv run pytest packages/volcengine-audio/tests
+uv run pytest tests
 
 # targeted file
-uv run pytest packages/volcengine-audio/tests/test_realtime.py
+uv run pytest tests/test_realtime.py
 
 # targeted test selection
-uv run pytest packages/volcengine-audio/tests -k tts
+uv run pytest tests -k tts
 ```
 
 Testing expectations:
@@ -132,8 +124,6 @@ Testing expectations:
 - Prefer exact payload assertions over loose partial checks.
 - Cover both request generation and response parsing when protocol behavior
   changes.
-- Do not use the dispatcher Docker test wrapper for this package unless the
-  change truly depends on repo-level integration.
 
 ## 6) Repo Map
 
@@ -153,7 +143,7 @@ Testing expectations:
 Refresh docs with:
 
 ```bash
-uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py
+uvx --with playwright python scripts/sync_volcengine_docs.py
 ```
 
 What the script does:
@@ -175,8 +165,8 @@ Important notes:
 
 ## 8) Coding Standards (Package-Specific)
 
-- Keep the package standalone; do not import dispatcher app code into
-  `src/volcengine_audio`.
+- Keep the package standalone; do not import code from outside this package
+  into `src/volcengine_audio`.
 - Use `orjson` for JSON operations in package code when serialization is
   needed.
 - Prefer modern typing syntax such as `list[str]` and `str | None`.
@@ -240,9 +230,9 @@ Formatting from repo config:
 Useful commands:
 
 ```bash
-git diff -- packages/volcengine-audio/doc_sync/volcengine
-git diff -- packages/volcengine-audio/src/volcengine_audio
-rg -n "keep_alive|push_to_talk|concurr|UpdatedTime" packages/volcengine-audio
+git diff -- doc_sync/volcengine
+git diff -- src/volcengine_audio
+rg -n "keep_alive|push_to_talk|concurr|UpdatedTime" .
 ```
 
 High-signal fields to watch:
@@ -260,8 +250,8 @@ High-signal fields to watch:
 Run at least:
 
 ```bash
-uv run pytest packages/volcengine-audio/tests
-uv run ruff check packages/volcengine-audio/src packages/volcengine-audio/tests
+uv run pytest tests
+uv run ruff check src tests
 ```
 
 Also confirm:
@@ -277,8 +267,8 @@ Before finishing code changes, run what is relevant:
 1. Refresh doc snapshots if the task is an upstream sync.
 2. Run targeted package tests via `uv run pytest ...`.
 3. Run `uv run ruff check ...`.
-4. Confirm no dispatcher-only dependency leaked into this standalone package.
-5. Confirm no secrets or temporary scrape artifacts were added to tracked files.
-6. Add docstrings and type annotations for new best-effort public code.
-7. Update nearby docs in the same change if behavior or maintenance workflow
+
+4. Confirm no secrets or temporary scrape artifacts were added to tracked files.
+5. Add docstrings and type annotations for new best-effort public code.
+6. Update nearby docs in the same change if behavior or maintenance workflow
    changed materially.

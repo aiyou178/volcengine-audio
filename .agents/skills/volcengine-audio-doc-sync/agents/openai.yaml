@@ -1,0 +1,4 @@
+interface:
+  display_name: "Volcengine Audio Doc Sync"
+  short_description: "Sync Volcengine audio SDK docs"
+  default_prompt: "Use $volcengine-audio-doc-sync to refresh Volcengine Audio SDK documentation snapshots and sync README metadata."

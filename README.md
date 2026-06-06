@@ -12,41 +12,25 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 - **Protocol Support**: Low-level protocol utilities for custom implementations
 - **Type Safety**: Full Pydantic model validation for all requests and responses
 
-## Documentation Sync
+## Documentation
 
-### Last SDK/doc sync
+Last SDK/doc sync: `2026-05-01`.
 
-* Local sync date: `2026-05-01`
-* Package maintenance guide: [`AGENTS.md`](AGENTS.md)
-* Snapshot manifest: [`doc_sync/volcengine/manifest.json`](doc_sync/volcengine/manifest.json)
-* Refresh command: `uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`
-* These Volcengine docs are JS-rendered. The sync script opens the public docs pages with Playwright, captures the backing `api/doc/getDocDetail` JSON response, and writes cleaned `Result.Content` markdown snapshots to `doc_sync/volcengine/`.
-* The tracked snapshot files store only doc content text with span tags removed, while source metadata stays in `manifest.json`.
-* The snapshot files are tracked in git for future diffs, but they are not packed into wheels because this package only ships `src/volcengine_audio`.
-* Latest upstream review: May 2026 doc updates changed realtime dialogue protocol coverage and auth/documentation wording. The SDK now includes the refreshed realtime control events, conversation truncation helpers, realtime `tts.extra` metadata, STT `X-Api-Key` guidance in snapshots, and TTS billing wording updates.
+### Current Tracked Sources
 
-### Tracked upstream sources
-
-* Realtime dialogue: `2026-04-29T07:34:45Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
-* TTS WebSocket bidirectional V3: `2026-04-24T03:45:24Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
-* TTS WebSocket unidirectional V3: `2026-04-24T03:44:56Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
-* TTS HTTP Chunked/SSE V3: `2026-04-24T03:44:50Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
-* STT streaming bigmodel: `2026-04-27T03:14:54Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
-
-### Sync checklist
-
-1. Refresh the tracked content snapshots with `uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`.
-2. Diff `doc_sync/volcengine/*.md` to see which request fields, enums, events, or examples changed upstream.
-3. Update `src/volcengine_audio/` schemas and helper functions as needed.
-4. Update or add tests under `tests/`.
-5. Update the local sync date in this README and in [`README.zh-CN.md`](README.zh-CN.md).
+- Realtime dialogue: `2026-04-29T07:34:45Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+- TTS WebSocket bidirectional V3: `2026-04-24T03:45:24Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
+- TTS WebSocket unidirectional V3: `2026-04-24T03:44:56Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
+- TTS HTTP Chunked/SSE V3: `2026-04-24T03:44:50Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
+- STT streaming bigmodel: `2026-04-27T03:14:54Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
 
 ## Installation
+
+Requires Python 3.10 or newer.
 
 ### Install from PyPI
 
 ```bash
-# From PyPI (when published)
 pip install volcengine-audio
 ```
 
@@ -57,6 +41,19 @@ git clone https://github.com/aiyou178/volcengine-audio.git
 cd volcengine-audio
 pip install -e .
 ```
+
+## Development
+
+```bash
+# from this repository root
+uv sync --frozen --group dev
+uv run pytest tests
+uv run ruff check src tests
+uv run ruff format src tests
+```
+
+This package is a standalone SDK. Keep source under `src/volcengine_audio` and
+tests under `tests`.
 
 ## Quick Start
 
@@ -198,13 +195,21 @@ finish = RealtimeDialogueFunctions.finish_session_payload("session-123")
 
 Core protocol definitions and utilities.
 
+**Package Metadata:**
+- `__version__`: Installed package version
+
 **Classes:**
 - `ProtocolVersion`: Protocol version enumeration (V1)
+- `HeaderSize`: Protocol header size enumeration
 - `MessageType`: Message types for bidirectional communication
+- `MessageTypeSpecificFlag`: Message flags for sequencing and event framing
+- `AsrMessageType`: ASR-specific message types
+- `AsrMessageTypeSpecificFlag`: ASR-specific message flags
 - `EventSend`: Events sent from client to server
 - `EventReceive`: Events received from server
 - `SerializationMethod`: Payload serialization methods (JSON, RAW, PROTOBUF)
 - `CompressionMethod`: Payload compression methods (NONE, GZIP)
+- `AudioCodec`: Audio codec values used by STT request schemas
 
 **Constants:**
 - `HOST`: `'openspeech.bytedance.com'` - Volcengine audio service host
@@ -228,13 +233,17 @@ Speech-to-Text (ASR) models and utilities.
 **Enums:**
 - `STTResource`: STT resource types for billing
 - `STTAudioFormatV3`: Audio formats (pcm, wav, mp3, ogg)
+- `AudioFormatV2`: Audio formats for the V2 request schema
 - `STTResultType`: Result types (full, single)
 - `STTBigmodelNoStreamLanguage`: Supported languages for bigmodel
 
 **Helper Classes:**
 - `VolcengineAsrFunctionsV3`: V3 API helper functions
+  - `generate_asr_header()`: Generate V3 ASR request headers
+  - `generate_asr_before_payload()`: Generate V3 ASR sequence metadata
   - `generate_asr_full_client_request()`: Generate full client request
   - `generate_asr_audio_only_request()`: Generate audio-only request
+  - `parse_request()`: Parse generated request bytes for inspection
   - `parse_response()`: Parse server response
 - `VolcengineAsrFunctionsV2`: V2 API helper functions
   - `full_client_request()`: Generate full client request
@@ -253,19 +262,35 @@ Text-to-Speech models and utilities.
 - `TTSSentenceStartResponse`: Sentence start notification
 - `TTSSentenceEndResponse`: Sentence end notification
 - `TTSEndResponse`: TTS ended notification
+- `TTSSentenceEndPayload`: Sentence-end payload typed dict
+- `TTSSubtitlePayload`: Subtitle payload typed dict
+- `TTSTimedWord`: Timed word typed dict
 
 **Enums:**
 - `TTSBigmodelResourceType`: TTS resource IDs (`seed-tts-1.0`, `seed-tts-2.0`, etc.)
 - `TTSBigmodelModelType`: Optional `req_params.model` values (`seed-tts-1.1`, `seed-tts-2.0-standard`, etc.)
 - `TTSAudioFormat`: Audio formats (wav, pcm, mp3, ogg_opus)
+- `OperationEnum`: HTTP TTS operation values
+
+**Configuration Models:**
+- `AppConfig`: HTTP TTS app credentials and cluster
+- `UserConfig`: User identifier for request metadata
+- `AudioConfig`: HTTP TTS audio options
+- `RequestConfig`: HTTP TTS request options
 
 **Helper Classes:**
 - `VolcengineTTSFunctions`: TTS API helper functions
+  - `prepare_request()`: Prepare HTTP TTS request payload
+  - `task_request_payload()`: Generate bidirectional task payload
   - `start_connection_payload()`: Start connection
   - `start_session_payload()`: Start TTS session
+  - `cancel_session_payload()`: Cancel TTS session
   - `finish_session_payload()`: Finish TTS session
+  - `finish_connection_payload()`: Finish connection
   - `extract_response_payload()`: Extract and parse response
   - `calculate_payload()`: Calculate request payload
+- `validate_tts_resource_model_mapping()`: Validate compatible resource/model
+  pairs for TTS 1.x and 2.x resources
 
 #### `volcengine_audio.realtime`
 
@@ -293,12 +318,16 @@ Realtime dialogue (combined TTS+STT) models and utilities.
 - `ChatTextQueryConfirmedResponse`: Text query acknowledgement
 - `ConversationCreatedResponse`, `ConversationUpdatedResponse`, `ConversationRetrievedResponse`, `ConversationTruncatedResponse`, `ConversationDeletedResponse`: Context management acknowledgements
 - `ConfigUpdatedResponse`: Runtime config update acknowledgement
+- `ConnectionFailedResponse`: Connection-level failure payload
 - `SessionStartedResponse`: Session started
 - `SessionFailedResponse`: Session failed
+- `RealtimeDialogueErrorResponse`: Generic realtime error payload
+- `RealtimeDialogueUsage`: Usage typed dict
 
 **Helper Classes:**
 - `RealtimeDialogueFunctions`: Realtime dialogue API helpers
   - `start_connection_payload()`: Start connection
+  - `finish_connection_payload()`: Finish connection
   - `start_session_payload()`: Start dialogue session
   - `task_request_payload()`: Send audio for recognition
   - `update_config_payload()`: Update runtime TTS/dialog config
@@ -508,9 +537,11 @@ config = RealtimeDialogueConfig(
 ## Error Handling
 
 ```python
-from volcengine_audio import EventReceive
+from volcengine_audio import EventReceive, VolcengineTTSFunctions
 
-event, session_id, payload = VolcengineTTSFunctions.extract_response_payload(response)
+event, session_id, payload = VolcengineTTSFunctions.extract_response_payload(
+    response
+)
 
 if event == EventReceive.SessionFailed:
     print(f"Session failed: {payload.get('error')}")
@@ -518,23 +549,6 @@ elif event == EventReceive.ConnectionFailed:
     print(f"Connection failed: {payload.get('error')}")
 elif event == EventReceive.SERVER_PROCESSING_ERROR:
     print("Server processing error")
-```
-
-## Development
-
-### Running Tests
-
-```bash
-pytest tests/
-```
-
-### Code Style
-
-This package uses Ruff for linting and formatting:
-
-```bash
-ruff check src/ tests/
-ruff format src/ tests/
 ```
 
 ## License

@@ -13,18 +13,9 @@
 * **底层协议支持**：提供二进制协议头与事件工具函数
 * **类型安全**：请求与响应模型基于 Pydantic 校验
 
-## 文档同步
+## 文档
 
-### 最近一次 SDK/文档同步
-
-* 本地同步日期：`2026-05-01`
-* 维护说明：[`AGENTS.md`](AGENTS.md)
-* 快照清单：[`doc_sync/volcengine/manifest.json`](doc_sync/volcengine/manifest.json)
-* 刷新命令：`uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py`
-* Volcengine 文档页面是 JS 渲染的。同步脚本会通过 Playwright 打开公开页面，拦截其底层 `api/doc/getDocDetail` JSON 响应，并把清洗后的 `Result.Content` 文本快照写入 `doc_sync/volcengine/`。
-* 跟踪文件只保存文档正文内容，并在写入前去掉 `<span>` 标签；更新时间、来源链接和哈希等元数据保存在 `manifest.json`。
-* 这些快照文件会提交到仓库中，方便下次直接 `git diff` 查出字段变化；它们不在 wheel 中，因为当前构建只打包 `src/volcengine_audio`。
-* 本轮上游检查结论：2026 年 5 月刷新后，实时对话文档补充了新的控制事件、上下文截断和 `tts.extra` 元数据；SDK 已同步相关 enum、schema 与 helper。STT 快照补充新版控制台 `X-Api-Key` 说明，TTS 快照主要是计费文案修正。
+最近一次 SDK/文档同步：`2026-05-01`。
 
 ### 当前跟踪的上游文档
 
@@ -33,13 +24,6 @@
 * TTS WebSocket 单向流式 V3：`2026-04-24T03:44:56Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
 * TTS HTTP Chunked/SSE V3：`2026-04-24T03:44:50Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
 * STT 大模型流式识别：`2026-04-27T03:14:54Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
-
-### 后续同步建议
-
-1. 运行 `uvx --with playwright python packages/volcengine-audio/scripts/sync_volcengine_docs.py` 刷新正文快照。
-2. 比较 `doc_sync/volcengine/*.md` 的 diff，优先检查新增字段、枚举值、事件 ID 和示例变化。
-3. 按需更新 `src/volcengine_audio/` 下的 schema 和 helper。
-4. 同步更新 `tests/`、`README.md` 和本文件。
 
 ## 安装
 
@@ -56,6 +40,19 @@ git clone https://github.com/aiyou178/volcengine-audio.git
 cd volcengine-audio
 pip install -e .
 ```
+
+## 开发
+
+```bash
+# 从本仓库根目录运行
+uv sync --frozen --group dev
+uv run pytest tests
+uv run ruff check src tests
+uv run ruff format src tests
+```
+
+该仓库作为独立 SDK 发布。代码放在 `src/volcengine_audio`，测试放在
+`tests`。
 
 ## 快速开始
 
@@ -186,21 +183,6 @@ finish = RealtimeDialogueFunctions.finish_session_payload("session-123")
 
 更完整的符号清单和协议说明可参考英文版 [`README.md`](README.md)
 中的 API Reference，或者直接查看 `src/volcengine_audio/` 源码。
-
-## 开发
-
-### 运行测试
-
-```bash
-pytest tests/
-```
-
-### 代码检查
-
-```bash
-ruff check src/ tests/
-ruff format src/ tests/
-```
 
 ## 许可证
 
