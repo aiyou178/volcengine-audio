@@ -312,12 +312,15 @@ class TTSReqParams(BaseModel):
     )
 
     context_texts: list[str] | None = Field(
-      None, description='Speech instruction context, only first item is effective'
+      None,
+      description='Speech instruction context, only first item is effective',
     )
     section_id: str = Field(
       '', description='Multi-turn context ID shared across serial TTS requests'
     )
-    use_tag_parser: bool = Field(False, description='Enable speech tag COT parser')
+    use_tag_parser: bool = Field(
+      False, description='Enable speech tag COT parser'
+    )
 
     @model_validator(mode='after')
     def check_markdown_dependent_options(self):
