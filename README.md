@@ -14,16 +14,16 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 ## Documentation
 
-Last SDK/doc sync: `2026-06-06`.
+Last SDK/doc sync: `2026-09-02`.
 
 ### Current Tracked Sources
 
-- Realtime dialogue: `2026-06-04T10:15:01Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+- Realtime dialogue: `2026-08-20T06:52:26Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
 - TTS WebSocket bidirectional V3: `2026-05-25T08:51:30Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
 - TTS WebSocket unidirectional V3: `2026-05-25T08:49:18Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
 - TTS HTTP Chunked/SSE V3: `2026-05-25T09:03:36Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
-- STT streaming bigmodel: `2026-05-29T02:49:48Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
-- TTS voice list: `2026-05-26T05:41:00Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
+- STT streaming bigmodel: `2026-08-06T09:40:25Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
+- TTS voice list: `2026-08-31T05:45:33Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
 
 ## Installation
 
@@ -301,8 +301,11 @@ Realtime dialogue (combined TTS+STT) models and utilities.
 **Configuration:**
 - `RealtimeDialogueConfig`: Complete dialogue session configuration
   - `DialogConfig`: Bot persona, speaking style, location
+    - Supports `web_global_api` as the global web-search source
   - `TTSConfig`: Voice type, audio settings, and `tts_2_0_model` wire alias
     `tts_2.0_model`
+    - Supports `dongbei`, `sichuan`, `shaanxi`, `yue`, `beijing`, `henan`,
+      `tianjin`, and `shanghai` explicit dialect values
   - `Asr`: ASR-specific settings
 
 **Request Models:**
@@ -317,6 +320,8 @@ Realtime dialogue (combined TTS+STT) models and utilities.
 - `ASRInfoResponse`: ASR task info (first word detection)
 - `ASRResponseModel`: ASR recognition result
 - `ASREndedResponse`: ASR ended notification
+- `RealtimeTTSSentenceStartResponse`, `RealtimeTTSSentenceEndResponse`:
+  Realtime synthesized-sentence lifecycle payloads
 - `ChatResponseModel`: Chat response
 - `ChatTextQueryConfirmedResponse`: Text query acknowledgement
 - `ConversationCreatedResponse`, `ConversationUpdatedResponse`, `ConversationRetrievedResponse`, `ConversationTruncatedResponse`, `ConversationDeletedResponse`: Context management acknowledgements

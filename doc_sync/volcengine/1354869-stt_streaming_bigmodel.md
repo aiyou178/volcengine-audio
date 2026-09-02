@@ -83,8 +83,7 @@ X-Tt-Logid: 202407261553070FACFE6D19421815D605
 // 标准 websocket 请求头示例
 GET /api/v3/sauc/bigmodel
 Host: openspeech.bytedance.com
-X-Api-App-Key: 123456789
-X-Api-Access-Key: your-access-key
+X-Api-Key: 123456789
 X-Api-Resource-Id: volc.bigasr.sauc.duration
 X-Api-Connect-Id: 随机生成的UUID
 
@@ -107,8 +106,8 @@ websocket 握手成功后，会返回这些 Response header。强烈建议记录
 # 协议详情
 
 ## 交互流程
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/d9c2da73af834189a40d55146f3163f8~tplv-goo7wpa0wc-image.image" width="782px" /></div>
 
-![Image](https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/6d72ca511e454d418f01c735c233bd5d~tplv-goo7wpa0wc-image.image =757x)
 
 ## WebSocket 二进制协议
 在 WebSocket frame payload 中，我们使用二进制协议传输数据，且使用专属的制定格式，包括 header、data size 和 data 三部分。其中 header 描述消息类型、序列化方式以及压缩格式等信息，payload size 是 payload 的长度，payload 是具体负载内容，依据消息类型不同 payload 内容不同。

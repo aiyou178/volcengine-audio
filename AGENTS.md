@@ -62,16 +62,16 @@ wheels because the wheel build only includes `src/volcengine_audio`.
 
 Current tracked upstream timestamps from `manifest.json` and `README.md`:
 
-- Realtime dialogue: `2026-06-04T10:15:01Z`
+- Realtime dialogue: `2026-08-20T06:52:26Z`
 - TTS WebSocket bidirectional V3: `2026-05-25T08:51:30Z`
 - TTS WebSocket unidirectional V3: `2026-05-25T08:49:18Z`
 - TTS HTTP Chunked/SSE V3: `2026-05-25T09:03:36Z`
-- STT streaming bigmodel: `2026-05-29T02:49:48Z`
-- TTS voice list: `2026-05-26T05:41:00Z`
+- STT streaming bigmodel: `2026-08-06T09:40:25Z`
+- TTS voice list: `2026-08-31T05:45:33Z`
 
 Latest local sync review:
 
-- Local sync date in README: `2026-06-06`.
+- Local sync date in README: `2026-09-02`.
 - Realtime docs added 12K 2.0 context notes, O/SC convergence wording,
   updated SC2.0 voice-list references, `tts.extra.tts_2.0_model`, and a
   10w TPM default. The SDK exposes this as `tts_2_0_model` with the wire alias
@@ -83,6 +83,10 @@ Latest local sync review:
   `seed-tts-2.0-standard`, expand ICL2.0 explicit-language guidance, and
   clarify `context_texts`, `section_id`, and `use_tag_parser`. The existing SDK
   fields cover those parameters.
+- Realtime docs add the `web_global_api` search source and expand
+  `explicit_dialect` with Cantonese, Beijing, Henan, Tianjin, and Shanghai.
+- Realtime TTS sentence events use dedicated response models with
+  `question_id` and `reply_id`; they must not reuse standalone TTS V3 models.
 - TTS voice-list doc `1257544` is now tracked because the API docs delegate
   speaker, model/resource compatibility, voice ability, and language support
   details to that page. The SDK still keeps speaker fields open as `str`.

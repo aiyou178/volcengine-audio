@@ -95,6 +95,7 @@ class RealtimeDialogueConfig(BaseModel):
         web_summary = 'web_summary'
         web = 'web'
         web_agent = 'web_agent'
+        web_global_api = 'web_global_api'
 
       class InputMod(StrEnum):
         audio = 'audio'
@@ -175,6 +176,11 @@ class RealtimeDialogueConfig(BaseModel):
         dongbei = 'dongbei'
         sichuan = 'sichuan'
         shaanxi = 'shaanxi'
+        yue = 'yue'
+        beijing = 'beijing'
+        henan = 'henan'
+        tianjin = 'tianjin'
+        shanghai = 'shanghai'
 
       class AIGCMetadata(BaseModel):
         enable: bool = Field(False, description='Enable implicit watermark')
@@ -419,6 +425,51 @@ class ConversationTruncateRequest(BaseModel):
   item_id: str = Field(..., description='Context item identifier')
   audio_end_ms: int = Field(
     ..., ge=0, description='Played audio duration to preserve, in ms'
+  )
+
+
+class RealtimeTTSType(StrEnum):
+  """Audio source reported by realtime dialogue TTS sentence events."""
+
+  audit_content_risky = 'audit_content_risky'
+  chat_tts_text = 'chat_tts_text'
+  network = 'network'
+  external_rag = 'external_rag'
+  sing = 'sing'
+  default = 'default'
+
+
+class RealtimeTTSSentenceStartResponse(BaseModel):
+  """Payload emitted when realtime dialogue starts a synthesized sentence."""
+
+  tts_type: RealtimeTTSType | str = Field(
+    ..., description='Source of the synthesized audio'
+  )
+  text: str = Field(..., description='Text being synthesized')
+  question_id: str = Field(..., description='Question context item id')
+  reply_id: str = Field(..., description='Reply context item id')
+
+
+class RealtimeTTSSentenceDuration(BaseModel):
+  """Observed timing metadata attached to a realtime sentence-end event."""
+
+  cur_sentence_index: int = Field(..., ge=0)
+  sentence_start_time: float = Field(..., ge=0)
+  sentence_end_time: float = Field(..., ge=0)
+
+
+class RealtimeTTSSentenceEndResponse(BaseModel):
+  """Payload emitted when realtime dialogue ends a synthesized sentence."""
+
+  question_id: str = Field(..., description='Question context item id')
+  reply_id: str = Field(..., description='Reply context item id')
+  text: str | None = Field(None, description='Text that was synthesized')
+  amount: int | None = Field(None, ge=0, description='Provider sentence amount')
+  mute_cut_ms: int | None = Field(
+    None, ge=0, description='Muted audio trimmed from the sentence, in ms'
+  )
+  sentence_duration: RealtimeTTSSentenceDuration | None = Field(
+    None, description='Provider sentence timing metadata'
   )
 
 

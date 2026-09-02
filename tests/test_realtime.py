@@ -19,6 +19,8 @@ from volcengine_audio import (
   EventSend,
   RealtimeDialogueConfig,
   RealtimeDialogueFunctions,
+  RealtimeTTSSentenceEndResponse,
+  RealtimeTTSSentenceStartResponse,
   SayHelloRequest,
   UpdateConfigRequest,
 )
@@ -84,7 +86,7 @@ def test_start_session_supports_latest_doc_fields():
         ),
       ],
       extra=RealtimeDialogueConfig.DialogConfig.Extra(
-        volc_websearch_type=RealtimeDialogueConfig.DialogConfig.Extra.VolcWebsearchType.web_agent,
+        volc_websearch_type=RealtimeDialogueConfig.DialogConfig.Extra.VolcWebsearchType.web_global_api,
         volc_websearch_bot_id='bot-id',
         input_mod=RealtimeDialogueConfig.DialogConfig.Extra.InputMod.keep_alive,
         enable_loudness_norm=True,
@@ -95,7 +97,7 @@ def test_start_session_supports_latest_doc_fields():
     ),
     tts=RealtimeDialogueConfig.TTSConfig(
       extra=RealtimeDialogueConfig.TTSConfig.Extra(
-        explicit_dialect='sichuan',
+        explicit_dialect=RealtimeDialogueConfig.TTSConfig.Extra.ExplicitDialect.yue,
         tts_2_0_model='expressive',
         aigc_metadata=RealtimeDialogueConfig.TTSConfig.Extra.AIGCMetadata(
           enable=True,
@@ -129,9 +131,9 @@ def test_start_session_supports_latest_doc_fields():
   assert meta['dialog']['extra']['enable_loudness_norm'] is True
   assert meta['dialog']['extra']['enable_conversation_truncate'] is True
   assert meta['dialog']['extra']['enable_user_query_exit'] is True
-  assert meta['dialog']['extra']['volc_websearch_type'] == 'web_agent'
+  assert meta['dialog']['extra']['volc_websearch_type'] == 'web_global_api'
   assert meta['dialog']['extra']['volc_websearch_bot_id'] == 'bot-id'
-  assert meta['tts']['extra']['explicit_dialect'] == 'sichuan'
+  assert meta['tts']['extra']['explicit_dialect'] == 'yue'
   assert meta['tts']['extra']['tts_2.0_model'] == 'expressive'
   assert meta['tts']['extra']['aigc_metadata']['produce_id'] == 'produce-id'
   assert meta['tts']['audio_config']['speech_rate'] == 10
@@ -317,6 +319,50 @@ def test_asr_ended_response_accepts_empty_payload():
     'task_request_seq_id': None,
     'task_request_timestamp': None,
     'user_duration': 0,
+  }
+
+
+def test_realtime_tts_sentence_payloads_match_dialogue_events():
+  start = RealtimeTTSSentenceStartResponse.model_validate(
+    {
+      'question_id': 'question-1',
+      'reply_id': 'reply-1',
+      'text': '',
+      'tts_type': 'default',
+    }
+  )
+  end = RealtimeTTSSentenceEndResponse.model_validate(
+    {
+      'amount': 12,
+      'mute_cut_ms': 0,
+      'question_id': 'question-1',
+      'reply_id': 'reply-1',
+      'sentence_duration': {
+        'cur_sentence_index': 0,
+        'sentence_end_time': 2.5862916,
+        'sentence_start_time': 0,
+      },
+      'text': '你好呀',
+    }
+  )
+
+  assert start.model_dump(mode='json') == {
+    'tts_type': 'default',
+    'text': '',
+    'question_id': 'question-1',
+    'reply_id': 'reply-1',
+  }
+  assert end.model_dump() == {
+    'question_id': 'question-1',
+    'reply_id': 'reply-1',
+    'text': '你好呀',
+    'amount': 12,
+    'mute_cut_ms': 0,
+    'sentence_duration': {
+      'cur_sentence_index': 0,
+      'sentence_start_time': 0.0,
+      'sentence_end_time': 2.5862916,
+    },
   }
 
 

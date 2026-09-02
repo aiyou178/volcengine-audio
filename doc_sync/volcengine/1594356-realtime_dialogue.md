@@ -104,7 +104,55 @@
 
 6. 端到端模型SC版本服务端新增21个官方克隆音色，客户端在使用这些音色时候需要在StartSession事件中的TTS 配置指定对应的克隆音色。同时，角色描述在服务端已经配置好了，客户端在请求API时候无需配置character_manifest字段。
 
-	[SC-2.0版本音色列表可点击此处查看](https://www.volcengine.com/docs/6561/1257544?lang=zh#%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%AE%9E%E6%97%B6%E8%AF%AD%E9%9F%B3%E5%A4%A7%E6%A8%A1%E5%9E%8B-s2s-o%E7%89%88%E6%9C%AC%E5%92%8Csc-2-0%E7%89%88%E6%9C%AC-%E9%9F%B3%E8%89%B2%E5%88%97%E8%A1%A8)
+SC版本
+
+
+1. ICL_zh_female_aojiaonvyou_tob
+2. ICL_zh_female_bingjiaojiejie_tob
+3. ICL_zh_female_chengshujiejie_tob
+4. ICL_zh_female_keainvsheng_tob
+5. ICL_zh_female_nuanxinxuejie_tob
+6. ICL_zh_female_tiexinnvyou_tob
+7. ICL_zh_female_wenrouwenya_tob
+8. ICL_zh_female_wumeiyujie_tob
+9. ICL_zh_female_xingganyujie_tob
+10. ICL_zh_male_aiqilingren_tob
+11. ICL_zh_male_aojiaogongzi_tob
+12. ICL_zh_male_aojiaojingying_tob
+13. ICL_zh_male_aomanshaoye_tob
+14. ICL_zh_male_badaoshaoye_tob
+15. ICL_zh_male_bingjiaobailian_tob
+16. ICL_zh_male_bujiqingnian_tob
+17. ICL_zh_male_chengshuzongcai_tob
+18. ICL_zh_male_cixingnansang_tob
+19. ICL_zh_male_cujingnanyou_tob
+20. ICL_zh_male_fengfashaonian_tob
+21. ICL_zh_male_fuheigongzi_tob
+
+SC2.0版本
+
+
+1. saturn_zh_female_aojiaonvyou_tob
+2. saturn_zh_female_bingjiaojiejie_tob
+3. saturn_zh_female_chengshujiejie_tob
+4. saturn_zh_female_keainvsheng_tob
+5. saturn_zh_female_nuanxinxuejie_tob
+6. saturn_zh_female_tiexinnvyou_tob
+7. saturn_zh_female_wenrouwenya_tob
+8. saturn_zh_female_wumeiyujie_tob
+9. saturn_zh_female_xingganyujie_tob
+10. saturn_zh_male_aiqilingren_tob
+11. saturn_zh_male_aojiaogongzi_tob
+12. saturn_zh_male_aojiaojingying_tob
+13. saturn_zh_male_aomanshaoye_tob
+14. saturn_zh_male_badaoshaoye_tob
+15. saturn_zh_male_bingjiaobailian_tob
+16. saturn_zh_male_bujiqingnian_tob
+17. saturn_zh_male_chengshuzongcai_tob
+18. saturn_zh_male_cixingnansang_tob
+19. saturn_zh_male_cujingnanyou_tob
+20. saturn_zh_male_fengfashaonian_tob
+21. saturn_zh_male_fuheigongzi_tob
 
 
 
@@ -222,7 +270,7 @@ curl -L -X POST 'https://openspeech.bytedance.com/api/v1/mega_tts/audio/upload' 
 
 2. 在客户端发送 FinishSession 事件后，系统将不再返回任何事件。但客户端仍可复用与火山语音网关之间的 WebSocket 连接。若需发起新的会话，客户端需重新从 StartSession 事件开始。
 
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/62445c1d35494378bc96c4ba90a79bb9~tplv-goo7wpa0wc-image.image" width="500px" /></div>
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/c3bbaa34cb3148de974f1a9ee0711bbf~tplv-goo7wpa0wc-image.image" width="594px" /></div>
 
 
 3. 在没有对话需求时候，可以发送FinishSession事件结束会话。如果不想复用websocket连接，可以继续发送FinishConnection事件，释放对应的websocket连接。
@@ -346,7 +394,7 @@ Optional可选字段code、sequence、event取决于Message type specific flags�
 | | | |* 0b0010：最后一个无序号的数据包 |\
 | | | |* 0b0011：最后一个序号小于 0 的数据包，一般用-1表示 |
 | | | | | \
-|event |4 |【必须】描述连接过程中状态管理的预定义事件，详细参考[实时对话事件](https://bytedance.larkoffice.com/docx/JwKydEGDkojKxHxOrzNcYeewnyd#share-NceddeBUkot54QxBOemcYsKknFe)中的事件ID |* 0b0100：携带事件ID |\
+|event |4 |【必须】描述连接过程中状态管理的预定义事件，详细参考[实时对话事件](https://docs.volcengine.com/docs/6561/1594356?lang=zh#_2-3-%E5%AE%9E%E6%97%B6%E5%AF%B9%E8%AF%9D%E4%BA%8B%E4%BB%B6)中的事件ID |* 0b0100：携带事件ID |\
 | | | | |\
 | | | | |
 | | | | | \
@@ -456,7 +504,8 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | | |* volc_websearch_type字段用于指定搜索服务类型 |\
 | | | |   * web代表普通版，不传此参数默认为普通版 |\
 | | | |   * web_summary代表总结版，需要客户指定才能生效 |\
-| | | |   * web_agent代表搜索Agent，用于提升搜索质量，适用2.0版本 |\
+| | | |   * web_agent代表搜索Agent，用于提升搜索质量，适用2.0版本，需在[火山控制台](https://console.volcengine.com/ask-echo/my-agent)开通 |\
+| | | |   * web_global_api代表豆包搜索global版，仅适用于[S2S-全双工版本](https://docs.volcengine.com/docs/6561/2549778?lang=zh)，需在[火山控制台](https://console.volcengine.com/search-infinity/web-search)开通 |\
 | | | |* volc_websearch_api_key字段用于指定客户开通的融合信息搜索API或者搜索Agent服务访问密钥 |\
 | | | |* volc_websearch_bot_id字段用于访问对应的搜索Agent服务 |\
 | | | |* volc_websearch_result_count字段用于指定搜索结果条数，最多10条，默认10条 |\
@@ -517,7 +566,7 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 |^^|^^|^^| | | \
 | | | |tts字段用于描述合成音频相关配置： |\
 | | | | |\
-| | | |* explicit_dialect指定方言参数，**当前仅在 2.0 模型 vv 音色生效**，支持取值：`dongbei`、`sichuan`、`shaanxi`。 |\
+| | | |* explicit_dialect指定方言参数，**只在4个精品音色生效，​**支持取值：`dongbei`、`sichuan`、`shaanxi`、`yue`、`beijing`、`henan`、`tianjin`、`shanghai`。 |\
 | | | |* aigc_metadata字段用于AIGC 内容溯源与版权元信息，配合隐式水印使用，当前仅支持2.0版本模型 |\
 | | | |* speech_rate字段用于控制输出语音播放的语速快慢，数值越大语速越快，数值越小语速越慢，取值范围[-50,100]，默认为0，当前仅支持2.0版本模型 |\
 | | | |* loudness_rate字段用于控制输出语音音量，取值范围[-50,100]，默认为0，当前仅支持2.0版本模型 |\
@@ -736,7 +785,7 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 .custom-md-table th:nth-of-type(3){min-width:100px;}
 .custom-md-table th:nth-of-type(4){min-width:400px;}
 .custom-md-table th:nth-of-type(5){min-width:100px;}
- </style>
+</style>
 备注：
 
 * Websocket阶段：在 HTTP 建立连接之后Upgrade
@@ -1117,32 +1166,24 @@ RealtimeAPI的交互流程目前只支持server_vad模式，该模式的交互�
 4. 服务端合成的音频通过TTSResponse事件将音频返回给客户端
 
 
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/3722b9de766a484cb236ced79fa44eb7~tplv-goo7wpa0wc-image.image" width="400px" /></div>
-
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/5fe98f971d32491583a66c4407662cd1~tplv-goo7wpa0wc-image.image" width="2560px" /></div>
 
 
 ## 4.1 文本输入
-
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/f6f879039f39402a8d3ecf505bec2b46~tplv-goo7wpa0wc-image.image" width="400px" /></div>
-
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/d357449a6ada442aaf56626eb1252f76~tplv-goo7wpa0wc-image.image" width="2560px" /></div>
 
 
 ## 4.2 合成音频
 当客户判定不使用模型生成闲聊内容时，系统允许客户多次上传文本执行音频合成，以满足多样化需求。整体交互示例如下所示：
-
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/389354b7d57d4f7793e41182397fa7eb~tplv-goo7wpa0wc-image.image" width="400px" /></div>
-
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/a9c00ca293ff4a2fb3a5214946e59fb7~tplv-goo7wpa0wc-image.image" width="2560px" /></div>
 
 
 ## 4.3 外部RAG输入
-
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/d57dfa283e774048b2d643d709f59d9d~tplv-goo7wpa0wc-image.image" width="400px" /></div>
-
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/409e951d138b475d9340821e6f445cfb~tplv-goo7wpa0wc-image.image" width="759px" /></div>
 
 
 ## 4.4 联网Agent搜索源
-<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/42566f09cea94500850a5eb4a1f8f2cf~tplv-goo7wpa0wc-image.image" width="400px" /></div>
-
+<div style="text-align: center"><img src="https://p9-arcosite.byteimg.com/tos-cn-i-goo7wpa0wc/0ddce82e0ebd4614a114baa3d0bcce6d~tplv-goo7wpa0wc-image.image" width="798px" /></div>
 
 
 # 5 错误码

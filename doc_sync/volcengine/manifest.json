@@ -1,18 +1,17 @@
 {
-  "synced_at": "2026-06-06T02:13:34.523817+00:00",
+  "synced_at": "2026-09-02T01:02:40.496236+00:00",
   "command": "python scripts/sync_volcengine_docs.py",
   "docs": [
     {
       "name": "realtime_dialogue",
       "document_id": "1594356",
       "title": "端到端实时语音大模型API接入文档",
-      "updated_time": "2026-06-04T10:15:01Z",
+      "updated_time": "2026-08-20T06:52:26Z",
       "source_url": "https://www.volcengine.com/docs/6561/1594356?lang=zh",
       "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1594356&AuditDocumentID=&type=online",
       "file": "doc_sync/volcengine/1594356-realtime_dialogue.md",
-      "content_sha256": "1b11af60c41300940ccb29cbc6e80c4cfaef680876ddb9b23bfbb4b5514cb4e8",
+      "content_sha256": "b1253e87a2d5e0e19bacaf166af61b9c5f612a5b58219ebe2a53aee112a79fff",
       "linked_document_ids": [
-        "1257544",
         "1305191",
         "196768"
       ]
@@ -75,11 +74,11 @@
       "name": "stt_streaming_bigmodel",
       "document_id": "1354869",
       "title": "大模型流式语音识别API",
-      "updated_time": "2026-05-29T02:49:48Z",
+      "updated_time": "2026-08-06T09:40:25Z",
       "source_url": "https://www.volcengine.com/docs/6561/1354869?lang=zh",
       "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1354869&AuditDocumentID=&type=online",
       "file": "doc_sync/volcengine/1354869-stt_streaming_bigmodel.md",
-      "content_sha256": "3c6bc2d4b04b10c50d80675c589d9f2b16949561ba554ccbd8fe9af16890017e",
+      "content_sha256": "8a4fb68980c63d79e53d0161b1ac092c4ff7b26ef23f8ae16eaab9bb6f78ec40",
       "linked_document_ids": [
         "1206007",
         "155739",
@@ -90,18 +89,21 @@
       "name": "tts_voice_list",
       "document_id": "1257544",
       "title": "音色列表",
-      "updated_time": "2026-05-26T05:41:00Z",
+      "updated_time": "2026-08-31T05:45:33Z",
       "source_url": "https://www.volcengine.com/docs/6561/1257544?lang=zh",
       "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1257544&AuditDocumentID=&type=online",
       "file": "doc_sync/volcengine/1257544-tts_voice_list.md",
-      "content_sha256": "d625327a3c09718cc77c3aa1a1db9f84debf38305ffc95e4290a18b6eee8d196",
-      "linked_document_ids": []
+      "content_sha256": "73feea780c61b2e164d5e1f60a819e7db64e4474592da35266a6a959387a6321",
+      "linked_document_ids": [
+        "1871062"
+      ]
     }
   ],
   "untracked_linked_document_ids": [
     "1206007",
     "1305191",
     "155739",
+    "1871062",
     "196768",
     "2119699"
   ]
