@@ -1,105 +1,54 @@
 ---
 name: volcengine-audio-doc-sync
-description: Refresh and reconcile Volcengine Audio SDK documentation snapshots and SDK metadata. Use when working on doc_sync/volcengine snapshots, scripts/sync_volcengine_docs.py, Volcengine upstream doc timestamp changes, README sync dates, or schema/helper drift from Volcengine STT, TTS, or realtime dialogue docs in the volcengine-audio package.
+description: Refresh Volcengine audio documentation snapshots or reconcile SDK/README metadata with tracked STT, TTS, and realtime docs. Use within the standalone volcengine-audio package.
 ---
 
 # Volcengine Audio Doc Sync
 
-## Scope
+Run from the package root and keep changes package-local. Inspect existing
+`doc_sync/volcengine/manifest.json`, snapshots, and their git diff first.
 
-Use this skill for the standalone `volcengine-audio` SDK. Keep all guidance,
-commands, and file paths package-local.
+## Choose the requested outcome
 
-Primary package files:
+- **README/AGENTS metadata alignment:** use existing snapshots and manifest.
+  Do not rerun network sync or alter SDK behavior.
+- **Upstream snapshot refresh:** run `python scripts/sync_volcengine_docs.py`,
+  review the diff, and update public sync metadata in both README languages.
+  Report SDK drift without implementing it unless reconciliation is in scope.
+- **SDK reconciliation:** identify upstream evidence, update the affected
+  models/helpers, public exports, tests, and user-facing documentation.
 
-- `doc_sync/volcengine/manifest.json`
-- `doc_sync/volcengine/*.md`
-- `scripts/sync_volcengine_docs.py`
-- `src/volcengine_audio/`
-- `tests/`
-- `README.md`
-- `README.zh-CN.md`
+## Refresh invariants
 
-## Workflow
+Fetch all documents successfully before replacing old snapshots. Track only
+cleaned `Result.Content` text, stripping span tags; never track raw JSON
+responses. Keep source URLs, API URLs, update timestamps, content hashes,
+`linked_document_ids`, and `untracked_linked_document_ids` in the manifest.
 
-1. Inspect the current tracked snapshots before running network sync:
+Review new or obsolete links. Track linked pages when they define SDK-relevant
+fields, enum/event values, response shapes, resource/model compatibility, or
+speaker/language tables. Do not expand to credential FAQs, console setup, or
+marketing pages without SDK relevance. Verify a page is no longer a behavior
+source before removing it. Flag SDK-critical non-Volcengine links if they need a
+separate fetch mechanism.
 
-```bash
-git diff -- doc_sync/volcengine
-sed -n '1,220p' doc_sync/volcengine/manifest.json
-```
+## Reconciliation map
 
-2. If the task asks to refresh upstream docs, run the direct API sync:
+- `stt.py`: language/audio fields, context, auth guidance, response/error events.
+- `tts.py`: resource/model IDs, additions, subtitle/timestamp payloads.
+- `realtime.py`: session extras, control/context events and acknowledgements.
+- `protocol.py`: shared IDs, serialization, compression, framing.
+- `__init__.py`: new or changed public exports.
 
-```bash
-python scripts/sync_volcengine_docs.py
-```
+Change code only with evidence of relevant drift and authorization to reconcile
+SDK behavior. Cover changed request generation and response parsing with exact
+payload tests. Keep procedural checklists here; README files carry public usage
+and accurate sync metadata.
 
-3. Diff the refreshed snapshots and manifest. Focus on request fields, enum
-   values, event IDs, resource/model names, auth headers, and response payload
-   shapes.
+## Completion
 
-4. Review linked docs in `manifest.json`:
-
-- Check each entry's `linked_document_ids` and the top-level
-  `untracked_linked_document_ids`.
-- Add a linked Volcengine doc to `scripts/sync_volcengine_docs.py` when the
-  target page carries SDK-relevant enum values, field descriptions,
-  resource/model compatibility, event IDs, response payload shapes, or
-  speaker/language support tables.
-- Keep credential FAQ, console-operation, setup-only, and marketing links out
-  of `DOCS` unless their content becomes part of SDK request/response behavior.
-- If a tracked doc stops being linked or becomes obsolete, verify whether it is
-  still a source of SDK behavior before removing it from `DOCS`.
-- For non-Volcengine links that move SDK-critical information, record the link
-  in the review notes and decide whether a separate fetch mechanism is needed;
-  do not silently ignore it.
-
-5. Update SDK code only when the snapshot diff proves API drift:
-
-- `stt.py`: request fields, language/audio enums, STT response payloads,
-  context data, old/new console auth guidance, and STT error event codes.
-- `tts.py`: resource IDs, `req_params.model`, additions, subtitle/timestamp
-  payloads, and response events.
-- `realtime.py`: session config, dialog/asr/tts extra fields, control events,
-  context management requests, and acknowledgement payloads.
-- `protocol.py`: shared message types, event IDs, serialization, compression,
-  and framing helpers.
-- `__init__.py`: public exports for any new public schema or helper.
-
-6. Update package tests for every behavior change. Prefer exact payload
-   assertions over partial checks.
-
-7. Update README files only with user-facing facts: install/development usage,
-   public examples, API reference, package version, and the local sync date or
-   source timestamps when they are meant to be public. Keep procedural sync
-   checklists in this skill, not in README files.
-
-## Snapshot Rules
-
-- Store only cleaned upstream `Result.Content` text in tracked `.md` snapshot
-  files.
-- Do not store full JSON responses in tracked snapshots.
-- Strip `<span ...>` and `</span>` tags before writing snapshots.
-- Keep source metadata such as `updated_time`, `source_url`, `api_url`, and
-  content hashes in `manifest.json`.
-- Keep `linked_document_ids` and `untracked_linked_document_ids` in
-  `manifest.json` so new, obsolete, or newly important links are visible in
-  future diffs.
-- Snapshot files are tracked for future diffs, but they are not included in the
-  wheel because the build packages only `src/volcengine_audio`.
-
-## Validation
-
-Run focused checks after changing code:
-
-```bash
-uv run pytest tests
-uv run ruff check src tests
-```
-
-For docs-only changes, at least run:
-
-```bash
-git diff --check
-```
+For code changes run `uv run pytest tests` and `uv run ruff check src tests`;
+for docs-only changes check snapshot/manifest consistency and `git diff --check`.
+Report refreshed sources, implemented versus reported drift, validation, and
+any source that could not be fetched. Do not claim an SDK sync from a
+snapshot-only refresh.
