@@ -8,24 +8,19 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 - **Speech-to-Text (STT)**: Convert audio to text using Volcengine's ASR services (V2 and V3 APIs)
 - **Text-to-Speech (TTS)**: Synthesize natural-sounding speech from text with various voice types
-- **Realtime Dialogue**: Bidirectional streaming for interactive voice conversations
+- **Realtime Dialogue**: Legacy binary S2S and native Seeduplex JSON models
 - **Protocol Support**: Low-level protocol utilities for custom implementations
-- **Type Safety**: Full Pydantic model validation for all requests and responses
+- **Type Safety**: Pydantic models for documented request and response fields
 
 ## Documentation
 
-Last SDK/doc sync: `2026-09-13` (native Seeduplex reconciliation; existing
-STT/TTS/realtime snapshot content unchanged).
+Documentation checked: `2026-09-13`.
 
-Native Seeduplex JSON schemas now live in `realtime.py` and are exported from
-`volcengine_audio`: `SeeduplexSessionRequest`, `SeeduplexEvent`,
-`SeeduplexFunctionCall`, `SeeduplexToolResult`, and `encode_seeduplex_request`.
-Use the encoder with explicit native dictionaries to preserve partial session
-updates, including `tools: []`. Authentication and transport remain client-owned.
-These additions are source-only until a package release; use the corresponding
-repository revision rather than assuming the existing PyPI 0.2.5 includes them.
-See the [complete schema audit](doc/seeduplex-schema-audit.md) for coverage,
-document inconsistencies, and intentionally unspecified usage payloads.
+Version 0.2.6 adds native Seeduplex session, audio, speech, context and tool-call
+schemas. See the [release notes](CHANGELOG.md) and
+[schema coverage](doc/seeduplex-schema-audit.md) for details and documented
+protocol ambiguities. Authentication, WebSocket transport and tool execution
+remain the caller's responsibility.
 
 ### Current Tracked Sources
 
@@ -40,7 +35,7 @@ document inconsistencies, and intentionally unspecified usage payloads.
 
 ## Installation
 
-Requires Python 3.10 or newer.
+Requires Python 3.11 or newer.
 
 ### Install from PyPI
 
@@ -60,7 +55,7 @@ pip install -e .
 
 ```bash
 # from this repository root
-uv sync --frozen --group dev
+uv sync --extra dev
 uv run pytest tests
 uv run ruff check src tests
 uv run ruff format src tests
@@ -70,6 +65,38 @@ This package is a standalone SDK. Keep source under `src/volcengine_audio` and
 tests under `tests`.
 
 ## Quick Start
+
+### Native Seeduplex
+
+```python
+from volcengine_audio import SeeduplexEvent, encode_seeduplex_request
+
+request_frame = encode_seeduplex_request({
+    'type': 'session.create',
+    'session': {
+        'model': '1.2.6.1',
+        'instructions': 'Answer briefly.',
+        'audio': {
+            'input': {'format': {'type': 'pcm', 'rate': 16000}},
+            'output': {'format': {'type': 'pcm', 'rate': 24000}},
+        },
+        'tools': [],
+    },
+})
+
+# Send request_frame as a WebSocket text frame and parse the server reply.
+event = SeeduplexEvent.model_validate_json(
+    '{"type":"session.created","session":{"id":"example-session"}}'
+)
+print(event.session.id)
+```
+
+The encoder preserves supplied fields, including partial session updates and
+`tools: []` to clear the tool set. Send mono PCM16 input in paced 20 ms packets
+(640 bytes at 16 kHz). Use native mute/unmute events when stopping/resuming input.
+Tool results use `conversation.item.create` with `role: "tool"`, the original
+`call_id` and `content: [{"type": "input_text", "text": completed_result}]`.
+Aggregate every result in the received batch before returning it.
 
 ### Speech-to-Text (STT)
 

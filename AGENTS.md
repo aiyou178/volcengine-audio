@@ -6,7 +6,7 @@ submodule changes distinct from parent-repository changes.
 
 ## Boundaries
 
-- Preserve `requires-python >=3.10`; the parent dispatcher's Python target
+- Preserve `requires-python >=3.11`; the parent dispatcher's Python target
   does not change this standalone package contract. Check `pyproject.toml`
   for current dependencies/build settings.
 - Keep `src/volcengine_audio` standalone; do not import dispatcher modules.
@@ -33,7 +33,7 @@ submodule changes distinct from parent-repository changes.
   Keep speaker fields open strings rather than freezing the voice catalog.
 
 ```bash
-uv sync --frozen --group dev
+uv sync --frozen --extra dev
 uv run pytest tests
 uv run ruff check src tests
 uv run ruff format --check src tests

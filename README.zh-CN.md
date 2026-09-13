@@ -9,22 +9,18 @@
 
 * **语音识别（STT）**：支持火山引擎 ASR V2 / V3 请求模型与协议辅助函数
 * **语音合成（TTS）**：支持多种音色、双向/单向流式和附加参数
-* **实时语音对话**：支持语音到语音实时交互、上下文和联网配置
+* **实时语音对话**：提供旧版二进制 S2S 和原生 Seeduplex JSON 模型
 * **底层协议支持**：提供二进制协议头与事件工具函数
 * **类型安全**：请求与响应模型基于 Pydantic 校验
 
 ## 文档
 
-最近一次 SDK/文档同步：`2026-09-13`（原生 Seeduplex 协议核对；已有
-STT/TTS/实时对话文档快照内容没有变化）。
+文档核对日期：`2026-09-13`。
 
-原生 Seeduplex JSON 模型位于 `realtime.py`，从 `volcengine_audio` 导出：
-`SeeduplexSessionRequest`、`SeeduplexEvent`、`SeeduplexFunctionCall`、
-`SeeduplexToolResult` 和 `encode_seeduplex_request`。编码器接收显式的原生字典，
-保留会话部分更新与 `tools: []` 全量清空语义。鉴权和传输仍由调用方管理。
-这些新增接口尚未发布到 PyPI；请使用对应源码版本，不要假定现有 0.2.5 已包含。
-完整字段覆盖、文档矛盾及尚未明确的 usage 结构见
-[协议核对记录](doc/seeduplex-schema-audit.md)。
+0.2.6 新增原生 Seeduplex 会话、音频、语音合成、上下文和工具调用模型。
+功能变更与协议说明见[版本记录](CHANGELOG.md)和
+[字段覆盖记录](doc/seeduplex-schema-audit.md)。鉴权、WebSocket 传输和工具执行
+由调用方管理。
 
 ### 当前跟踪的上游文档
 
@@ -38,6 +34,8 @@ STT/TTS/实时对话文档快照内容没有变化）。
 * TTS 音色列表：`2026-08-31T05:45:33Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
 
 ## 安装
+
+要求 Python 3.11 或更高版本。
 
 ### 从 PyPI 安装
 
@@ -57,7 +55,7 @@ pip install -e .
 
 ```bash
 # 从本仓库根目录运行
-uv sync --frozen --group dev
+uv sync --extra dev
 uv run pytest tests
 uv run ruff check src tests
 uv run ruff format src tests
@@ -67,6 +65,38 @@ uv run ruff format src tests
 `tests`。
 
 ## 快速开始
+
+### 原生 Seeduplex
+
+```python
+from volcengine_audio import SeeduplexEvent, encode_seeduplex_request
+
+request_frame = encode_seeduplex_request({
+    'type': 'session.create',
+    'session': {
+        'model': '1.2.6.1',
+        'instructions': '请简短回答。',
+        'audio': {
+            'input': {'format': {'type': 'pcm', 'rate': 16000}},
+            'output': {'format': {'type': 'pcm', 'rate': 24000}},
+        },
+        'tools': [],
+    },
+})
+
+# 将 request_frame 作为 WebSocket 文本帧发送，随后解析服务端响应。
+event = SeeduplexEvent.model_validate_json(
+    '{"type":"session.created","session":{"id":"example-session"}}'
+)
+print(event.session.id)
+```
+
+编码器保留显式传入的字段，支持会话部分更新，以及通过 `tools: []` 清空工具。
+单声道 PCM16 输入按实时节奏发送 20 ms 分片（16 kHz 时每片 640 字节）；
+暂停或恢复输入时发送原生静音或取消静音事件。
+工具结果通过 `conversation.item.create` 回传，条目携带 `role: "tool"`、原始
+`call_id` 和 `content: [{"type": "input_text", "text": completed_result}]`。
+同批调用的全部结果应聚合后一次性回传。
 
 ### 语音识别（STT）
 
