@@ -7,9 +7,10 @@ bidirectional streaming setup.
 
 import struct
 from enum import StrEnum
-from typing import Literal, TypedDict
+from typing import Annotated, Any, Literal, TypedDict
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+import orjson
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
 
 from .protocol import (
   EventSend,
@@ -17,6 +18,7 @@ from .protocol import (
   MessageType,
   MessageTypeSpecificFlag,
   ProtocolVersion,
+  SeeduplexServerEventType,
 )
 
 
@@ -319,6 +321,232 @@ class RealtimeDialogueConfig(BaseModel):
     None, description='TTS configuration, if None, use ogg opus'
   )
   asr: Asr | None = Field(default=None, description='ASR configuration')
+
+
+class SeeduplexInputFormat(BaseModel):
+  """Native mono int16 input; pacing belongs to the transport."""
+
+  type: Literal['pcm', 'speech_opus'] = 'pcm'
+  rate: Literal[16000] = 16000
+
+
+class SeeduplexOutputFormat(BaseModel):
+  """Native pcm means int16, unlike legacy realtime's float32 pcm."""
+
+  type: Literal['pcm', 'ogg_opus'] = 'ogg_opus'
+  rate: Literal[24000] = 24000
+
+
+class SeeduplexAudio(BaseModel):
+  class Input(BaseModel):
+    format: SeeduplexInputFormat = Field(default_factory=SeeduplexInputFormat)
+
+  class Output(BaseModel):
+    format: SeeduplexOutputFormat = Field(default_factory=SeeduplexOutputFormat)
+    voice: str | None = None
+    speed: float = Field(0, ge=-50, le=100)
+    loudness: float = Field(0, ge=-50, le=100)
+
+  input: Input = Field(default_factory=Input)
+  output: Output = Field(default_factory=Output)
+
+
+class SeeduplexTool(BaseModel):
+  """Flat native function declaration with an application-owned JSON Schema."""
+
+  type: Literal['function']
+  name: str
+  description: str = ''
+  parameters: dict[str, Any]
+
+
+class SeeduplexSession(BaseModel):
+  """Create/update settings; an explicit tools=[] replaces the whole set."""
+
+  id: str = ''
+  model: Literal['1.2.6.1'] = '1.2.6.1'
+  instructions: str = ''
+  audio: SeeduplexAudio = Field(default_factory=SeeduplexAudio)
+  tools: list[SeeduplexTool] = Field(default_factory=list)
+
+
+class SeeduplexExtension(BaseModel):
+  """StartSession-compatible extensions, as specified by the native guide."""
+
+  class TTS(RealtimeDialogueConfig.TTSConfig):
+    class Extra(RealtimeDialogueConfig.TTSConfig.Extra):
+      max_length_to_filter_parenthesis: int = Field(0, ge=0)
+
+    extra: Extra | None = None
+
+  class Dialog(RealtimeDialogueConfig.DialogConfig):
+    class Extra(RealtimeDialogueConfig.DialogConfig.Extra):
+      volc_websearch_type: Literal['web_custom_api', 'web_global_api'] = (
+        'web_custom_api'
+      )
+
+    extra: Extra = Field(default_factory=Extra)
+
+  asr: RealtimeDialogueConfig.Asr | None = None
+  tts: TTS | None = None
+  dialog: Dialog | None = None
+
+
+class SeeduplexTextContent(BaseModel):
+  type: Literal['input_text']
+  text: str
+
+
+class SeeduplexMessage(BaseModel):
+  id: str = ''
+  type: Literal['message']
+  role: Literal['user', 'assistant']
+  content: list[SeeduplexTextContent]
+  status: str = ''
+  call_id: str = ''
+  timestamp: int | None = None
+
+
+class SeeduplexToolResult(BaseModel):
+  """Completed result, not an OpenAI function_call_output item."""
+
+  role: Literal['tool']
+  call_id: str = Field(min_length=1)
+  content: list[SeeduplexTextContent]
+
+
+class SeeduplexFunctionCall(BaseModel):
+  """Completed arguments; execution limits are application policy."""
+
+  id: str = ''
+  type: Literal['function_call'] = 'function_call'
+  call_id: str = Field(min_length=1)
+  name: str = Field(min_length=1)
+  arguments: str
+
+
+class SeeduplexItemReference(BaseModel):
+  id: str
+
+
+class SeeduplexItemUpdate(SeeduplexItemReference):
+  content: list[SeeduplexTextContent]
+
+
+class _SeeduplexRequest(BaseModel):
+  event_id: str = ''
+
+
+class SeeduplexSessionRequest(_SeeduplexRequest):
+  type: Literal['session.create', 'session.update']
+  session: SeeduplexSession
+  extension: SeeduplexExtension | None = None
+
+
+class SeeduplexControlRequest(_SeeduplexRequest):
+  type: Literal[
+    'session.close',
+    'input_audio_buffer.commit',
+    'input_audio_mute.commit',
+    'input_audio_unmute.commit',
+    'response.cancel',
+  ]
+
+
+class SeeduplexAudioRequest(_SeeduplexRequest):
+  type: Literal['input_audio_buffer.append'] = 'input_audio_buffer.append'
+  audio: str
+
+
+class SeeduplexSpeechRequest(_SeeduplexRequest):
+  type: Literal[
+    'speech_text_buffer.commit',
+    'speech_text_buffer.replacement.append',
+    'speech_text_buffer.replacement.commit',
+  ]
+  text: str = ''
+
+
+class SeeduplexConversationCreateRequest(_SeeduplexRequest):
+  type: Literal['conversation.item.create'] = 'conversation.item.create'
+  items: list[SeeduplexMessage | SeeduplexToolResult]
+
+
+class SeeduplexConversationUpdateRequest(_SeeduplexRequest):
+  type: Literal['conversation.item.update'] = 'conversation.item.update'
+  items: list[SeeduplexItemUpdate]
+
+
+class SeeduplexConversationRetrieveRequest(_SeeduplexRequest):
+  type: Literal['conversation.item.retrieve'] = 'conversation.item.retrieve'
+  items: list[SeeduplexItemReference] = Field(default_factory=list)
+
+
+class SeeduplexConversationDeleteRequest(_SeeduplexRequest):
+  type: Literal['conversation.item.delete'] = 'conversation.item.delete'
+  items: list[SeeduplexItemReference]
+
+
+SeeduplexRequest = Annotated[
+  SeeduplexSessionRequest
+  | SeeduplexControlRequest
+  | SeeduplexAudioRequest
+  | SeeduplexSpeechRequest
+  | SeeduplexConversationCreateRequest
+  | SeeduplexConversationUpdateRequest
+  | SeeduplexConversationRetrieveRequest
+  | SeeduplexConversationDeleteRequest,
+  Field(discriminator='type'),
+]
+_seeduplex_request_adapter = TypeAdapter(SeeduplexRequest)
+
+
+def encode_seeduplex_request(event: dict[str, Any] | _SeeduplexRequest) -> str:
+  """Validate and encode one native text frame without injecting defaults."""
+  request = _seeduplex_request_adapter.validate_python(event)
+  payload = request.model_dump(mode='json', by_alias=True, exclude_unset=True)
+  payload['type'] = request.type
+  return orjson.dumps(payload).decode()
+
+
+class SeeduplexError(BaseModel):
+  type: str = ''
+  code: str | int = ''
+  message: str = ''
+  param: str | None = None
+
+
+class SeeduplexEvent(BaseModel):
+  """Native downstream envelope, including ASR errors and context/FC items.
+
+  Unknown event names are retained for forward-compatible dispatch. Usage is
+  opaque: the native docs name response.done but do not specify its payload.
+  Do not assume OpenAI usage fields or force legacy binary usage onto it.
+  """
+
+  type: SeeduplexServerEventType | str
+  event_id: str = ''
+  item_id: str = ''
+  content_index: int = 0
+  question_id: str = ''
+  response_id: str = ''
+  delta: str = ''
+  text: str = ''
+  transcript: str = ''
+  tts_type: (
+    Literal['audit_content_risky', 'chat_tts_text', 'network', 'default'] | str
+  ) = ''
+  session: SeeduplexSession = Field(default_factory=SeeduplexSession)
+  items: list[
+    SeeduplexFunctionCall
+    | SeeduplexMessage
+    | SeeduplexToolResult
+    | SeeduplexItemReference
+  ] = Field(default_factory=list)
+  status_code: str | int = ''
+  message: str = ''
+  error: SeeduplexError | None = None
+  usage: dict[str, Any] = Field(default_factory=dict)
 
 
 class SayHelloRequest(BaseModel):

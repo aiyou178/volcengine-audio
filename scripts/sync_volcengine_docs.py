@@ -23,6 +23,16 @@ class DocSource:
 
 DOCS = [
   DocSource(
+    name='seeduplex_realtime',
+    document_id='2549778',
+    source_url='https://www.volcengine.com/docs/6561/2549778?lang=zh',
+  ),
+  DocSource(
+    name='seeduplex_integration',
+    document_id='2549732',
+    source_url='https://www.volcengine.com/docs/6561/2549732?lang=zh',
+  ),
+  DocSource(
     name='realtime_dialogue',
     document_id='1594356',
     source_url='https://www.volcengine.com/docs/6561/1594356?lang=zh',
@@ -67,15 +77,105 @@ def _sha256(text: str) -> str:
 def _clean_content(content: str) -> str:
   """Return the tracked docs text with noisy span tags removed."""
 
+  if content.lstrip().startswith('{'):
+    document = json.loads(content)
+    if 'data' in document and '0' in document['data']:
+      content = _render_rich_text(document['data'])
   cleaned = re.sub(r'</?span\b[^>]*>', '', content)
   return '\n'.join(line.rstrip() for line in cleaned.strip().splitlines())
+
+
+def _render_rich_text(zones: dict) -> str:
+  """Render Volcengine zones, including collapsed fields and API examples."""
+  active: set[str] = set()
+  visited: set[str] = set()
+
+  def render(zone_id: str) -> str:
+    if zone_id in active or zone_id not in zones:
+      raise ValueError(f'Invalid documentation zone reference: {zone_id}')
+    active.add(zone_id)
+    visited.add(zone_id)
+    parts = []
+    for op in zones[zone_id]['ops']:
+      attrs = op.get('attributes', {})
+      value = op.get('insert', '')
+      if attrs.get('lmkr'):
+        if attrs.get('heading'):
+          parts.append('\n' + '#' * int(attrs['heading'][1:]) + ' ')
+        elif attrs.get('list'):
+          parts.append('- ')
+        continue
+      if attrs.get('zoneId'):
+        nested = render(attrs['zoneId'])
+        if attrs.get('type') == 'codeblock':
+          nested = '\n```\n' + nested.strip() + '\n```\n'
+        parts.append('\n' + nested + '\n')
+      elif attrs.get('aceTable'):
+        row_zone, col_zone = attrs['aceTable'].split()
+        visited.update((row_zone, col_zone))
+        rows = zones[row_zone]['ops']
+        cols = zones[col_zone]['ops']
+        parts.append('\n')
+        for index, row in enumerate(rows):
+          cells = []
+          for col in cols:
+            cell_id = 'x' + row['insert']['id'] + 'x' + col['insert']['id']
+            cells.append(
+              render(cell_id).strip().replace('|', '\\|').replace('\n', '<br>')
+            )
+          parts.append('| ' + ' | '.join(cells) + ' |\n')
+          if index == 0:
+            parts.append('| ' + ' | '.join('---' for _ in cols) + ' |\n')
+        parts.append('\n')
+      elif attrs.get('apiSampleData'):
+        samples = json.loads(attrs['apiSampleData'])
+        for sample in samples['data']:
+          parts.append('\n### ' + sample['title'] + '\n')
+          for side in ('input', 'output'):
+            code = sample.get(side + 'Code', '')
+            # The editor stores sample code with an additional JSON escape.
+            try:
+              code = json.loads('"' + code + '"')
+            except json.JSONDecodeError:
+              pass
+            parts.append('\n' + samples['config'][side + 'Name'] + '\n')
+            parts.append('\n```json\n' + code + '\n```\n')
+      elif attrs.get('file'):
+        parts.append(f'[{attrs["filename"]}]({attrs["src"]})')
+      elif attrs.get('image'):
+        parts.append(f'![{attrs.get("alt", "Diagram")}]({attrs["src"]})')
+      elif isinstance(value, str):
+        if attrs.get('hyperlink'):
+          href = json.loads(attrs['hyperlink'])['href']
+          value = f'[{value}]({href})'
+        elif attrs.get('inlineCode'):
+          value = f'`{value}`'
+        parts.append(value)
+      else:
+        raise ValueError('Unsupported documentation content operation')
+    active.remove(zone_id)
+    return ''.join(parts)
+
+  rendered = render('0')
+  # API example tabs are exported as detached panels, not zone references.
+  for zone_id in zones:
+    if zone_id.startswith('panel-') and zone_id not in visited:
+      rendered += '\n## API examples\n' + render(zone_id)
+  missing = set(zones) - visited
+  if missing:
+    raise ValueError(f'Unrendered documentation zones: {sorted(missing)}')
+  return rendered
 
 
 def _linked_volcengine_doc_ids(content: str) -> list[str]:
   """Return linked Volcengine docs IDs mentioned by a snapshot."""
 
   return sorted(
-    set(re.findall(r'https://www\.volcengine\.com/docs/6561/(\d+)', content))
+    set(
+      re.findall(
+        r'https://(?:www\.|docs\.)?volcengine\.com/docs/6561/(\d+)', content
+      )
+    )
   )
 
 
@@ -143,13 +243,17 @@ def main() -> None:
   }
 
   fetched = [(doc, *fetch_doc(doc)) for doc in DOCS]
+  cleaned = {
+    doc.document_id: _clean_content(payload['Result']['Content'])
+    for doc, _, payload in fetched
+  }
   tracked_doc_ids = {doc.document_id for doc, _, _ in fetched}
   linked_doc_ids: set[str] = set()
   _clear_output_dir()
 
   for doc, api_url, payload in fetched:
     result = payload.get('Result') or {}
-    content = _clean_content(result.get('Content', ''))
+    content = cleaned[doc.document_id]
     doc_linked_ids = _linked_volcengine_doc_ids(content)
     linked_doc_ids.update(doc_linked_ids)
     file_name = f'{doc.document_id}-{doc.name}.md'

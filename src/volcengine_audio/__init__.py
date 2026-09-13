@@ -15,11 +15,14 @@ Example:
     >>> from volcengine_audio import RealtimeDialogueConfig, HOST
 """
 
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 # Protocol exports
 from .protocol import (
   HOST,
+  SEEDUPLEX_URL,
+  SEEDUPLEX_DEFAULT_VOICE,
+  SeeduplexServerEventType,
   AsrMessageType,
   AsrMessageTypeSpecificFlag,
   AudioCodec,
@@ -69,6 +72,30 @@ from .realtime import (
   SessionFailedResponse,
   SessionStartedResponse,
   UpdateConfigRequest,
+  SeeduplexAudio,
+  SeeduplexAudioRequest,
+  SeeduplexControlRequest,
+  SeeduplexConversationCreateRequest,
+  SeeduplexConversationDeleteRequest,
+  SeeduplexConversationRetrieveRequest,
+  SeeduplexConversationUpdateRequest,
+  SeeduplexError,
+  SeeduplexEvent,
+  SeeduplexExtension,
+  SeeduplexFunctionCall,
+  SeeduplexInputFormat,
+  SeeduplexItemReference,
+  SeeduplexItemUpdate,
+  SeeduplexMessage,
+  SeeduplexOutputFormat,
+  SeeduplexRequest,
+  SeeduplexSession,
+  SeeduplexSessionRequest,
+  SeeduplexSpeechRequest,
+  SeeduplexTextContent,
+  SeeduplexTool,
+  SeeduplexToolResult,
+  encode_seeduplex_request,
 )
 
 # STT exports
@@ -193,4 +220,31 @@ __all__ = [
   'SessionFailedResponse',
   'SessionStartedResponse',
   'UpdateConfigRequest',
+  'SeeduplexAudio',
+  'SeeduplexAudioRequest',
+  'SeeduplexControlRequest',
+  'SeeduplexConversationCreateRequest',
+  'SeeduplexConversationDeleteRequest',
+  'SeeduplexConversationRetrieveRequest',
+  'SeeduplexConversationUpdateRequest',
+  'SeeduplexError',
+  'SeeduplexEvent',
+  'SeeduplexExtension',
+  'SeeduplexFunctionCall',
+  'SeeduplexInputFormat',
+  'SeeduplexItemReference',
+  'SeeduplexItemUpdate',
+  'SeeduplexMessage',
+  'SeeduplexOutputFormat',
+  'SeeduplexRequest',
+  'SeeduplexSession',
+  'SeeduplexSessionRequest',
+  'SeeduplexSpeechRequest',
+  'SeeduplexTextContent',
+  'SeeduplexTool',
+  'SeeduplexToolResult',
+  'encode_seeduplex_request',
+  'SEEDUPLEX_URL',
+  'SEEDUPLEX_DEFAULT_VOICE',
+  'SeeduplexServerEventType',
 ]

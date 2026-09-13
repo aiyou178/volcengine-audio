@@ -15,10 +15,21 @@
 
 ## 文档
 
-最近一次 SDK/文档同步：`2026-09-02`。
+最近一次 SDK/文档同步：`2026-09-13`（原生 Seeduplex 协议核对；已有
+STT/TTS/实时对话文档快照内容没有变化）。
+
+原生 Seeduplex JSON 模型位于 `realtime.py`，从 `volcengine_audio` 导出：
+`SeeduplexSessionRequest`、`SeeduplexEvent`、`SeeduplexFunctionCall`、
+`SeeduplexToolResult` 和 `encode_seeduplex_request`。编码器接收显式的原生字典，
+保留会话部分更新与 `tools: []` 全量清空语义。鉴权和传输仍由调用方管理。
+这些新增接口尚未发布到 PyPI；请使用对应源码版本，不要假定现有 0.2.5 已包含。
+完整字段覆盖、文档矛盾及尚未明确的 usage 结构见
+[协议核对记录](doc/seeduplex-schema-audit.md)。
 
 ### 当前跟踪的上游文档
 
+* 原生 Seeduplex API：`2026-09-11T06:21:28Z` - <https://www.volcengine.com/docs/6561/2549778?lang=zh>
+* 原生 Seeduplex 接入必读：`2026-09-04T09:02:13Z` - <https://www.volcengine.com/docs/6561/2549732?lang=zh>
 * 实时对话：`2026-08-20T06:52:26Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
 * TTS WebSocket 双向流式 V3：`2026-05-25T08:51:30Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
 * TTS WebSocket 单向流式 V3：`2026-05-25T08:49:18Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>

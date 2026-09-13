@@ -10,6 +10,36 @@ from enum import Enum, IntEnum
 HOST = 'openspeech.bytedance.com'
 """Volcengine audio service host"""
 
+SEEDUPLEX_URL = f'wss://{HOST}/api/v3/duplex/realtime/dialogue'
+SEEDUPLEX_DEFAULT_VOICE = 'zh_female_vv_jupiter_bigtts'
+
+
+class SeeduplexServerEventType(str, Enum):
+  """Documented native JSON events, separate from binary S2S event IDs."""
+
+  session_created = 'session.created'
+  session_updated = 'session.updated'
+  session_closed = 'session.closed'
+  audio_committed = 'input_audio_buffer.committed'
+  transcription_started = 'conversation.item.input_audio_transcription.started'
+  transcription_delta = 'conversation.item.input_audio_transcription.delta'
+  transcription_completed = (
+    'conversation.item.input_audio_transcription.completed'
+  )
+  transcription_failed = 'conversation.item.input_audio_transcription.failed'
+  text_delta = 'response.output_text.delta'
+  text_done = 'response.output_text.done'
+  audio_started = 'response.output_audio.started'
+  audio_delta = 'response.output_audio.delta'
+  audio_done = 'response.output_audio.done'
+  conversation_added = 'conversation.item.added'
+  conversation_retrieved = 'conversation.item.retrieved'
+  conversation_deleted = 'conversation.item.deleted'
+  function_calls = 'response.function_call_arguments.done'
+  done = 'response.done'
+  canceled = 'response.canceled'
+  error = 'error'
+
 
 class ProtocolVersion(Enum):
   """Protocol version for Volcengine audio services"""

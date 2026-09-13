@@ -14,10 +14,23 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 ## Documentation
 
-Last SDK/doc sync: `2026-09-02`.
+Last SDK/doc sync: `2026-09-13` (native Seeduplex reconciliation; existing
+STT/TTS/realtime snapshot content unchanged).
+
+Native Seeduplex JSON schemas now live in `realtime.py` and are exported from
+`volcengine_audio`: `SeeduplexSessionRequest`, `SeeduplexEvent`,
+`SeeduplexFunctionCall`, `SeeduplexToolResult`, and `encode_seeduplex_request`.
+Use the encoder with explicit native dictionaries to preserve partial session
+updates, including `tools: []`. Authentication and transport remain client-owned.
+These additions are source-only until a package release; use the corresponding
+repository revision rather than assuming the existing PyPI 0.2.5 includes them.
+See the [complete schema audit](doc/seeduplex-schema-audit.md) for coverage,
+document inconsistencies, and intentionally unspecified usage payloads.
 
 ### Current Tracked Sources
 
+- Native Seeduplex API: `2026-09-11T06:21:28Z` - <https://www.volcengine.com/docs/6561/2549778?lang=zh>
+- Native Seeduplex integration guide: `2026-09-04T09:02:13Z` - <https://www.volcengine.com/docs/6561/2549732?lang=zh>
 - Realtime dialogue: `2026-08-20T06:52:26Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
 - TTS WebSocket bidirectional V3: `2026-05-25T08:51:30Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
 - TTS WebSocket unidirectional V3: `2026-05-25T08:49:18Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
