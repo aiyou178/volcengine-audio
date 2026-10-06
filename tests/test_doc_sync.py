@@ -279,37 +279,40 @@ def test_failed_refresh_preserves_previous_snapshots(
     else:
       assert failed.value.doc == '{invalid json'
       assert failed.value.pos == 1
-    assert peer['requests'] == [
-      {
-        'method': 'GET',
-        'target': '/api/doc/getDocDetail?'
-        + urlencode(
-          {
-            'LibraryID': '6561',
-            'DocumentID': doc.document_id,
-            'AuditDocumentID': '',
-            'type': 'online',
-          }
+  # Receiving the body can precede sendall's return and the peer's transcript
+  # append. Its context joins both threads and proves native EOF before these
+  # complete transcript assertions, establishing the required rendezvous.
+  assert peer['requests'] == [
+    {
+      'method': 'GET',
+      'target': '/api/doc/getDocDetail?'
+      + urlencode(
+        {
+          'LibraryID': '6561',
+          'DocumentID': doc.document_id,
+          'AuditDocumentID': '',
+          'type': 'online',
+        }
+      ),
+      'version': 'HTTP/1.1',
+      'headers': {
+        'accept-encoding': 'identity',
+        'host': peer['host'],
+        'accept': 'application/json',
+        'referer': doc.source_url,
+        'user-agent': (
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+          'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36'
         ),
-        'version': 'HTTP/1.1',
-        'headers': {
-          'accept-encoding': 'identity',
-          'host': peer['host'],
-          'accept': 'application/json',
-          'referer': doc.source_url,
-          'user-agent': (
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36'
-          ),
-          'connection': 'close',
-        },
-      }
-      for doc in docs[:expected_count]
-    ]
-    assert peer['sent'] == [
-      (status, json.dumps(payload, separators=(',', ':')).encode())
-      for status, payload in responses[:expected_count]
-    ]
+        'connection': 'close',
+      },
+    }
+    for doc in docs[:expected_count]
+  ]
+  assert peer['sent'] == [
+    (status, json.dumps(payload, separators=(',', ':')).encode())
+    for status, payload in responses[:expected_count]
+  ]
   assert {
     str(path.relative_to(tmp_path)): (
       path.read_bytes(),
