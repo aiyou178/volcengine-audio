@@ -87,7 +87,8 @@ def test_update_replaces_tools_without_injecting_other_settings(tools):
   assert json.loads(encode_seeduplex_request(payload)) == payload
 
 
-def test_audio_constraints_and_open_voice_catalog():
+def test_audio_constraints_and_open_voice_catalog() -> None:
+  """Keep native audio rates and bounds strict while allowing cloned voices."""
   audio = SeeduplexAudio.model_validate(
     {
       'input': {'format': {'type': 'speech_opus', 'rate': 16000}},
@@ -103,7 +104,7 @@ def test_audio_constraints_and_open_voice_catalog():
   for payload in (
     {'input': {'format': {'rate': 24000}}},
     {'output': {'format': {'rate': 16000}}},
-    {'output': {'format': {'type': 'pcm_s16le'}}},
+    {'output': {'format': {'type': 'mp3'}}},
     {'output': {'speed': 101}},
     {'output': {'loudness': -51}},
   ):
@@ -116,6 +117,23 @@ def test_audio_constraints_and_open_voice_catalog():
     'type': 'input_audio_buffer.append',
     'audio': 'AA==',
   }
+
+
+@pytest.mark.parametrize('audio_format', ['pcm', 'pcm_s16le', 'ogg_opus'])
+def test_native_output_audio_formats_round_trip(audio_format: str) -> None:
+  """Preserve each documented output codec in requests and session replies."""
+  session = {
+    'audio': {'output': {'format': {'type': audio_format, 'rate': 24000}}}
+  }
+  request = {'type': 'session.update', 'session': session}
+  assert json.loads(encode_seeduplex_request(request)) == request
+  response = {'type': 'session.created', 'session': session}
+  assert (
+    SeeduplexEvent.model_validate(response).model_dump(
+      mode='json', exclude_unset=True
+    )
+    == response
+  )
 
 
 def test_all_native_extension_fields_round_trip():

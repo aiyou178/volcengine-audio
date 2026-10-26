@@ -14,9 +14,16 @@ Python SDK for Volcengine (ByteDance) Audio Services, providing comprehensive su
 
 ## Documentation
 
-Documentation checked: `2026-09-13`.
+Documentation checked: `2026-10-26`.
 
-Version 0.2.6 adds native Seeduplex session, audio, speech, context and tool-call
+The latest sync adds native Seeduplex `pcm_s16le` output, corrects `pcm` output
+to 32-bit PCM, and uses `web` as the legacy realtime search default. Native
+instructions, internal prompts, conversation history and function-call results
+share a 64K-token context limit. The voice snapshot includes current multilingual
+voices; TTS language detection is available through
+`TTSReqParams.Additions.enable_language_detector`.
+
+Version 0.3.0 includes native Seeduplex session, audio, speech, context and tool-call
 schemas. See the [release notes](CHANGELOG.md) and
 [schema coverage](doc/seeduplex-schema-audit.md) for details and documented
 protocol ambiguities. Authentication, WebSocket transport and tool execution
@@ -24,18 +31,19 @@ remain the caller's responsibility.
 
 ### Current Tracked Sources
 
-- Native Seeduplex API: `2026-09-11T06:21:28Z` - <https://www.volcengine.com/docs/6561/2549778?lang=zh>
-- Native Seeduplex integration guide: `2026-09-04T09:02:13Z` - <https://www.volcengine.com/docs/6561/2549732?lang=zh>
-- Realtime dialogue: `2026-08-20T06:52:26Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+- Native Seeduplex API: `2026-10-24T04:52:02Z` - <https://www.volcengine.com/docs/6561/2549778?lang=zh>
+- Native Seeduplex integration guide: `2026-10-20T12:04:54Z` - <https://www.volcengine.com/docs/6561/2549732?lang=zh>
+- Realtime dialogue: `2026-09-28T06:55:02Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
 - TTS WebSocket bidirectional V3: `2026-05-25T08:51:30Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
 - TTS WebSocket unidirectional V3: `2026-05-25T08:49:18Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
 - TTS HTTP Chunked/SSE V3: `2026-05-25T09:03:36Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
 - STT streaming bigmodel: `2026-08-06T09:40:25Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
-- TTS voice list: `2026-08-31T05:45:33Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
+- TTS voice list: `2026-10-13T08:17:11Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
 
 ## Installation
 
-Requires Python 3.11 or newer.
+Requires Python 3.11 or newer. CI covers Python 3.11 through 3.15. On Python
+3.15+, installation requires orjson 3.12+ and Pydantic 2.14+.
 
 ### Install from PyPI
 
@@ -78,7 +86,7 @@ request_frame = encode_seeduplex_request({
         'instructions': 'Answer briefly.',
         'audio': {
             'input': {'format': {'type': 'pcm', 'rate': 16000}},
-            'output': {'format': {'type': 'pcm', 'rate': 24000}},
+            'output': {'format': {'type': 'pcm_s16le', 'rate': 24000}},
         },
         'tools': [],
     },
@@ -97,6 +105,9 @@ The encoder preserves supplied fields, including partial session updates and
 Tool results use `conversation.item.create` with `role: "tool"`, the original
 `call_id` and `content: [{"type": "input_text", "text": completed_result}]`.
 Aggregate every result in the received batch before returning it.
+
+For output, `pcm_s16le` selects 16-bit PCM, `pcm` selects 32-bit PCM, and
+`ogg_opus` selects Ogg Opus. All native output formats use 24 kHz.
 
 ### Speech-to-Text (STT)
 
@@ -574,7 +585,7 @@ config = RealtimeDialogueConfig(
     dialog=RealtimeDialogueConfig.DialogConfig(
         extra=RealtimeDialogueConfig.DialogConfig.Extra(
             enable_volc_websearch=True,
-            volc_websearch_type="web_summary",
+            volc_websearch_type="web",
             volc_websearch_api_key="your-api-key",
             volc_websearch_result_count=5,
         ),

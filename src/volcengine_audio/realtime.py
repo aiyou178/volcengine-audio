@@ -124,7 +124,7 @@ class RealtimeDialogueConfig(BaseModel):
         default=False, description='Enable Volcengine web search'
       )
       volc_websearch_type: VolcWebsearchType = Field(
-        default=VolcWebsearchType.web_summary,
+        default=VolcWebsearchType.web,
         description='Volcengine integrated search type',
       )
       volc_websearch_api_key: str | None = Field(
@@ -331,9 +331,9 @@ class SeeduplexInputFormat(BaseModel):
 
 
 class SeeduplexOutputFormat(BaseModel):
-  """Native pcm means int16, unlike legacy realtime's float32 pcm."""
+  """Native 24 kHz output: 32-bit pcm, int16 pcm_s16le, or Ogg Opus."""
 
-  type: Literal['pcm', 'ogg_opus'] = 'ogg_opus'
+  type: Literal['pcm', 'pcm_s16le', 'ogg_opus'] = 'ogg_opus'
   rate: Literal[24000] = 24000
 
 

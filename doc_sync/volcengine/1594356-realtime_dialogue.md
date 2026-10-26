@@ -503,7 +503,6 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | | |* enable_volc_websearch字段用于开关内置联网功能，开启内置联网参考火山引擎控制台[融合信息搜索API](https://www.volcengine.com/docs/85508/1650263) |\
 | | | |* volc_websearch_type字段用于指定搜索服务类型 |\
 | | | |   * web代表普通版，不传此参数默认为普通版 |\
-| | | |   * web_summary代表总结版，需要客户指定才能生效 |\
 | | | |   * web_agent代表搜索Agent，用于提升搜索质量，适用2.0版本，需在[火山控制台](https://console.volcengine.com/ask-echo/my-agent)开通 |\
 | | | |   * web_global_api代表豆包搜索global版，仅适用于[S2S-全双工版本](https://docs.volcengine.com/docs/6561/2549778?lang=zh)，需在[火山控制台](https://console.volcengine.com/search-infinity/web-search)开通 |\
 | | | |* volc_websearch_api_key字段用于指定客户开通的融合信息搜索API或者搜索Agent服务访问密钥 |\
@@ -780,11 +779,11 @@ payload可以放音频二进制数据，也可以放类似StartSession事件中�
 | | | | | |
 #{.custom-md-table}#
 <style>
-.custom-md-table th:nth-of-type(1){min-width:100px;}
-.custom-md-table th:nth-of-type(2){min-width:100px;}
-.custom-md-table th:nth-of-type(3){min-width:100px;}
-.custom-md-table th:nth-of-type(4){min-width:400px;}
-.custom-md-table th:nth-of-type(5){min-width:100px;}
+	.custom-md-table th:nth-of-type(1){min-width:100px;}
+	.custom-md-table th:nth-of-type(2){min-width:100px;}
+	.custom-md-table th:nth-of-type(3){min-width:100px;}
+	.custom-md-table th:nth-of-type(4){min-width:400px;}
+	.custom-md-table th:nth-of-type(5){min-width:100px;}
 </style>
 备注：
 
@@ -1203,7 +1202,7 @@ RealtimeAPI的交互流程目前只支持server_vad模式，该模式的交互�
 |^^| | | \
 | |volc_websearch_bot_id is required |使用web_agent联网模式时，没有传递volc_websearch_bot_id |
 |^^| | | \
-| |volc_websearch_api_key is required |使用web，web_summary，web_agent联网模式时，没有传递volc_websearch_api_key |
+| |volc_websearch_api_key is required |使用web，web_agent联网模式时，没有传递volc_websearch_api_key |
 | | | | \
 |45000003 |Abnormal silence audio |超过10分钟没有对话交互，服务端释放链接 |
 | | | | \

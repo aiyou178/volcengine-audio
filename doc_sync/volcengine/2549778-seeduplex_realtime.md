@@ -55,7 +55,7 @@ model `string`
 
 
 instructions`string`
-系统提示词（System message），用于引导模型的回复内容与音频风格，与模型内部 SP 及上下文合计长度上限为 12K tokens
+系统提示词（System message），用于引导模型的回复内容与音频风格，与模型内部 SP、对话历史上下文及FC结果合计长度上限为 64K tokens（系统提示词 instructions + 模型内部 SP + 对话历史上下文 + FC结果）
 
 
 
@@ -76,6 +76,7 @@ rate`int`
 
 
 注意
+- 为保证模型达到最佳效果，请按照[接入必读](https://docs.volcengine.com/docs/DoubaoVoice/access-mustread?lang=zh)中的音频约束规范输入音频；人声过轻或背景噪声过大均可能导致效果下降
 - 音频分片建议以20 ms 为单位（16k /int16 格式下每包 640 字节），并严格按照实时音频流的节奏发送，发送速率偏离实际节奏（过快或过慢）都将触发服务端错误
 - 模型依赖上行音频流保活。客户端关闭麦克风后若不再发送音频帧，须主动发送静音事件`input_audio_mute.commit`，恢复麦克风时发送取消静音事件`input_audio_unmute.commit`，否则服务端会因持续收不到音频输入触发超时，导致模型无响应
 
@@ -89,7 +90,10 @@ format`object`
 指定输出音频规格
 
 type`string`
-指定输出音频格式，支持`pcm`和`ogg_opus`
+指定输出音频格式，支持以下三种格式：
+- `pcm`：32位小端序PCM格式
+- `pcm_s16le`：16位小端序PCM格式
+- `ogg_opus`：Ogg Opus压缩格式
 
 
 
@@ -265,7 +269,7 @@ enable_volc_websearch`bool`
 
 
 volc_websearch_type`string`
-用于指定搜索服务类型，默认为`web_custom_api`，支持以下服务：
+用于指定搜索服务类型，支持以下服务：
 - `web_custom_api`：豆包搜索 Custom 版，需在[控制台](https://console.volcengine.com/search-infinity/web-search?_vtm_=a106466.b106468.0_0.0_0.0.201_7676320633895405071&projectName=default)开通服务
 - `web_global_api`：豆包搜索 Global 版，需在[控制台](https://console.volcengine.com/search-infinity/web-search?_vtm_=a106466.b106468.0_0.0_0.0.201_7676320633895405071&projectName=default)开通服务
 说明
@@ -646,9 +650,9 @@ type `string`
 |  | conversation.item.input_audio_transcription.failed | ASR 识别失败 |
 | Chat | response.output_text.delta | 模型回复的文本内容（流式增量） |
 |  | response.output_text.done | 模型回复文本生成结束 |
-| TTS | response.output_audio.started | 合成音频的起始事件，`tts_type`取值类型有：<br>- `audit_content_risky`（命中安全审核音频）<br>- `chat_tts_text`（客户文本合成音频）<br>- `network`（内置联网音频）<br>- `default`（闲聊音频） |
+| TTS | response.output_audio.started | 合成音频的起始事件 |
 |  | response.output_audio.delta | 返回的流式音频数据块，Base64 编码 |
-|  | response.output_audio.done | 模型一轮音频合成结束。其中 `status_code="20000002"` 表示模型识别到用户的退出意图 |
+|  | response.output_audio.done | 模型一轮音频合成结束。 |
 | Context | conversation.item.added | 新增上下文请求的确认（ack），返回创建成功的上下文数组 |
 |  | conversation.item.retrieved | 查询上下文请求的确认（ack），返回查询到的上下文内容 |
 |  | conversation.item.deleted | 删除上下文请求的确认（ack），返回被删除的上下文内容。若没有可删除的上下文<br>`{   "status_code":40000010,`<br>`    "message":"empty conversation deleted messages"   }` |

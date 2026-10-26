@@ -15,27 +15,34 @@
 
 ## 文档
 
-文档核对日期：`2026-09-13`。
+文档核对日期：`2026-10-26`。
 
-0.2.6 新增原生 Seeduplex 会话、音频、语音合成、上下文和工具调用模型。
+本次同步新增原生 Seeduplex 的 `pcm_s16le` 输出，将 `pcm` 输出说明修正为
+32 位 PCM，并将旧版实时对话的默认联网模式改为 `web`。原生接口的系统提示词、
+模型内部提示词、对话历史和工具调用结果共享 64K tokens 上下文上限。
+音色快照已更新多语种能力；TTS 自动语种识别使用
+`TTSReqParams.Additions.enable_language_detector`。
+
+0.3.0 包含原生 Seeduplex 会话、音频、语音合成、上下文和工具调用模型。
 功能变更与协议说明见[版本记录](CHANGELOG.md)和
 [字段覆盖记录](doc/seeduplex-schema-audit.md)。鉴权、WebSocket 传输和工具执行
 由调用方管理。
 
 ### 当前跟踪的上游文档
 
-* 原生 Seeduplex API：`2026-09-11T06:21:28Z` - <https://www.volcengine.com/docs/6561/2549778?lang=zh>
-* 原生 Seeduplex 接入必读：`2026-09-04T09:02:13Z` - <https://www.volcengine.com/docs/6561/2549732?lang=zh>
-* 实时对话：`2026-08-20T06:52:26Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
+* 原生 Seeduplex API：`2026-10-24T04:52:02Z` - <https://www.volcengine.com/docs/6561/2549778?lang=zh>
+* 原生 Seeduplex 接入必读：`2026-10-20T12:04:54Z` - <https://www.volcengine.com/docs/6561/2549732?lang=zh>
+* 实时对话：`2026-09-28T06:55:02Z` - <https://www.volcengine.com/docs/6561/1594356?lang=zh>
 * TTS WebSocket 双向流式 V3：`2026-05-25T08:51:30Z` - <https://www.volcengine.com/docs/6561/1329505?lang=zh>
 * TTS WebSocket 单向流式 V3：`2026-05-25T08:49:18Z` - <https://www.volcengine.com/docs/6561/1719100?lang=zh>
 * TTS HTTP Chunked/SSE V3：`2026-05-25T09:03:36Z` - <https://www.volcengine.com/docs/6561/1598757?lang=zh>
 * STT 大模型流式识别：`2026-08-06T09:40:25Z` - <https://www.volcengine.com/docs/6561/1354869?lang=zh>
-* TTS 音色列表：`2026-08-31T05:45:33Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
+* TTS 音色列表：`2026-10-13T08:17:11Z` - <https://www.volcengine.com/docs/6561/1257544?lang=zh>
 
 ## 安装
 
-要求 Python 3.11 或更高版本。
+要求 Python 3.11 或更高版本，CI 覆盖 Python 3.11 至 3.15。
+Python 3.15 及以上版本要求 orjson 3.12+ 和 Pydantic 2.14+。
 
 ### 从 PyPI 安装
 
@@ -78,7 +85,7 @@ request_frame = encode_seeduplex_request({
         'instructions': '请简短回答。',
         'audio': {
             'input': {'format': {'type': 'pcm', 'rate': 16000}},
-            'output': {'format': {'type': 'pcm', 'rate': 24000}},
+            'output': {'format': {'type': 'pcm_s16le', 'rate': 24000}},
         },
         'tools': [],
     },
@@ -92,6 +99,8 @@ print(event.session.id)
 ```
 
 编码器保留显式传入的字段，支持会话部分更新，以及通过 `tools: []` 清空工具。
+输出格式中，`pcm_s16le` 为 16 位 PCM，`pcm` 为 32 位 PCM，`ogg_opus` 为
+Ogg Opus；原生接口输出均为 24 kHz。
 单声道 PCM16 输入按实时节奏发送 20 ms 分片（16 kHz 时每片 640 字节）；
 暂停或恢复输入时发送原生静音或取消静音事件。
 工具结果通过 `conversation.item.create` 回传，条目携带 `role: "tool"`、原始

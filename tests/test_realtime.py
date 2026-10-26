@@ -140,6 +140,34 @@ def test_start_session_supports_latest_doc_fields():
   assert meta['tts']['audio_config']['loudness_rate'] == 5
 
 
+def test_start_session_defaults_to_documented_web_search() -> None:
+  """Enabling search without a mode sends the provider's current default."""
+  config = RealtimeDialogueConfig(
+    dialog=RealtimeDialogueConfig.DialogConfig(
+      extra=RealtimeDialogueConfig.DialogConfig.Extra(
+        enable_volc_websearch=True,
+        volc_websearch_api_key='test-placeholder',
+      )
+    )
+  )
+  event, session_id, meta = _decode_session_json_payload(
+    RealtimeDialogueFunctions.start_session_payload('search-session', config)
+  )
+  assert (event, session_id) == (EventSend.StartSession.value, 'search-session')
+  assert meta['dialog']['extra'] == {
+    'strict_audit': True,
+    'enable_volc_websearch': True,
+    'volc_websearch_type': 'web',
+    'volc_websearch_api_key': 'test-placeholder',
+    'input_mod': 'audio',
+    'enable_music': False,
+    'enable_loudness_norm': False,
+    'enable_conversation_truncate': False,
+    'enable_user_query_exit': False,
+    'model': 'O',
+  }
+
+
 def test_dialog_context_requires_even_length():
   with pytest.raises(ValueError, match='dialog_context length must be an even'):
     RealtimeDialogueConfig(

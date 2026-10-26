@@ -1,16 +1,16 @@
 {
-  "synced_at": "2026-09-13T02:38:19.143689+00:00",
+  "synced_at": "2026-10-26T00:23:10.961367+00:00",
   "command": "python scripts/sync_volcengine_docs.py",
   "docs": [
     {
       "name": "seeduplex_realtime",
       "document_id": "2549778",
-      "title": "端到端实时语音-全双工版本",
-      "updated_time": "2026-09-11T06:21:28Z",
+      "title": "端到端实时语音（Seeduplex）",
+      "updated_time": "2026-10-24T04:52:02Z",
       "source_url": "https://www.volcengine.com/docs/6561/2549778?lang=zh",
       "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=2549778&AuditDocumentID=&type=online",
       "file": "doc_sync/volcengine/2549778-seeduplex_realtime.md",
-      "content_sha256": "559ff71ad349bb1d1f7aeabebb27aba162509c6601d6fda209c56974f1d05870",
+      "content_sha256": "7c63889a411c35eed2a9a5b8a4e90aad0da1ad88f9b617306a94c0aa5039dc14",
       "linked_document_ids": [
         "1257544",
         "2534847",
@@ -20,23 +20,23 @@
     {
       "name": "seeduplex_integration",
       "document_id": "2549732",
-      "title": "接入必读",
-      "updated_time": "2026-09-04T09:02:13Z",
+      "title": "端到端实时语音",
+      "updated_time": "2026-10-20T12:04:54Z",
       "source_url": "https://www.volcengine.com/docs/6561/2549732?lang=zh",
       "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=2549732&AuditDocumentID=&type=online",
       "file": "doc_sync/volcengine/2549732-seeduplex_integration.md",
-      "content_sha256": "60aae257cccf40e107d1887da0370046d155125dcc42199152cb2ecb3522473d",
+      "content_sha256": "4f94dc9aacc3a51ba0288804ae5a1b43a59add7b1f474d441e2e929bd2ee4b75",
       "linked_document_ids": []
     },
     {
       "name": "realtime_dialogue",
       "document_id": "1594356",
       "title": "端到端实时语音大模型API接入文档",
-      "updated_time": "2026-08-20T06:52:26Z",
+      "updated_time": "2026-09-28T06:55:02Z",
       "source_url": "https://www.volcengine.com/docs/6561/1594356?lang=zh",
       "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1594356&AuditDocumentID=&type=online",
       "file": "doc_sync/volcengine/1594356-realtime_dialogue.md",
-      "content_sha256": "b1253e87a2d5e0e19bacaf166af61b9c5f612a5b58219ebe2a53aee112a79fff",
+      "content_sha256": "5f077dac5084aaf2da070f8871f6cc4e27e38298a38bfe865d24011769e5f0df",
       "linked_document_ids": [
         "1305191",
         "1594356",
@@ -117,11 +117,11 @@
       "name": "tts_voice_list",
       "document_id": "1257544",
       "title": "音色列表",
-      "updated_time": "2026-08-31T05:45:33Z",
+      "updated_time": "2026-10-13T08:17:11Z",
       "source_url": "https://www.volcengine.com/docs/6561/1257544?lang=zh",
       "api_url": "https://www.volcengine.com/api/doc/getDocDetail?LibraryID=6561&DocumentID=1257544&AuditDocumentID=&type=online",
       "file": "doc_sync/volcengine/1257544-tts_voice_list.md",
-      "content_sha256": "73feea780c61b2e164d5e1f60a819e7db64e4474592da35266a6a959387a6321",
+      "content_sha256": "eb3de698ccd6018114f4325d7070c300ab30529e2dc0869294f1818fbc45d518",
       "linked_document_ids": [
         "1871062"
       ]
